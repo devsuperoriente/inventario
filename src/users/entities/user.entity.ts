@@ -3,6 +3,7 @@ import type { Relation } from 'typeorm';
 import { Profile } from './profile.entity.js';
 import { Exclude } from 'class-transformer';
 
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
