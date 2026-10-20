@@ -24,6 +24,7 @@ export class CreateUserDto {
   @Type(() => CreateProfileDto)
   @IsNotEmpty()
   profile: CreateProfileDto;
+
 }
 
 export class UpdateUserDto extends PartialType(OmitType(CreateUserDto, ['profile'])) {

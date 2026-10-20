@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { RawMaterialConsumption } from '../entities/raw.material.consumption.entity.js';
 import { RawMaterialConsumptionService } from './raw.material.consumption.service.js';
-import { RawMaterialConsumption } from './entities/raw.material.consumption.entity.js';
 
 describe('RawMaterialConsumptionService', () => {
   let service: RawMaterialConsumptionService;

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateDetailsRecipeDto {
@@ -6,6 +7,15 @@ export class CreateDetailsRecipeDto {
   amount?: number;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   observation: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  recipeId: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  productId: number;
+
 }

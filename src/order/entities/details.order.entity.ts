@@ -24,7 +24,7 @@ export class DetailsOrder {
   updatedAt: Date;
 
   @ManyToOne(() => Order, (order) => order.detailsOrder, { nullable: false })
-  @JoinColumn({ name: 'detail_order_id' })
+  @JoinColumn({ name: 'order_id' })
   order: Relation<Order>;
 
   @ManyToOne(() => Product, (product) => product.detailsOrder, { nullable: false })

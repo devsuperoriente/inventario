@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BatchsService } from './batchs.service.js';
-import { BatchsController } from './batchs.controller.js';
+import { BatchsService } from './services/batchs.service.js';
+import { BatchsController } from './controllers/batchs.controller.js';
 import { Batch } from './entities/batch.entity.js';
 import { Provider } from '../providers/entities/provider.entity.js';
-import { ProvidersController } from '../providers/providers.controller.js';
-import { ProvidersService } from '../providers/providers.service.js';
+import { ProvidersController } from '../providers/controllers/providers.controller.js';
+import { ProvidersService } from '../providers/services/providers.service.js';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Batch, Provider])],

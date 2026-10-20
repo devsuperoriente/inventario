@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { TypeMovementService } from '../services/type.movement.service.js';
 import { CreateTypeMovementDto } from '../dto/create-type.movement.dto.js';
 import { UpdateTypeMovementDto } from '../dto/update-type.movement.dto.js';
 
-@Controller('type.movement')
+@Controller('tipos-movimiento')
 export class TypeMovementController {
   constructor(private readonly typeMovementService: TypeMovementService) {}
 
@@ -22,7 +22,7 @@ export class TypeMovementController {
     return this.typeMovementService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateTypeMovementDto: UpdateTypeMovementDto) {
     return this.typeMovementService.update(+id, updateTypeMovementDto);
   }

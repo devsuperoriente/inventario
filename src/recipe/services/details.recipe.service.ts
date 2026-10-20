@@ -13,7 +13,12 @@ export class DetailsRecipeService {
   ) {}
 
   findAll() {
-    return this.detailsRecipeRepository.find();
+    return this.detailsRecipeRepository.find({
+      relations : {
+        product:true,
+        recipe: true
+      }
+    });
   }
 
   async findOne(id: number) {
@@ -26,12 +31,17 @@ export class DetailsRecipeService {
 
   async create(createDetailsRecipeDto: CreateDetailsRecipeDto) {
     try {
-      return await this.detailsRecipeRepository.save(createDetailsRecipeDto);
+      const orderProduction = await this.detailsRecipeRepository.save({
+        ...createDetailsRecipeDto,
+        recipe: { id: createDetailsRecipeDto.recipeId },
+        product : { id: createDetailsRecipeDto.productId }
+      });
+      return await this.findOne(orderProduction.id);
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('Error al crear el detalle de la receta');
+      throw new BadRequestException('Error al crear el detalle de receta');
     }
   }
 

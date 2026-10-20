@@ -3,7 +3,7 @@ import { DetailsRecipeService } from '../services/details.recipe.service.js';
 import { CreateDetailsRecipeDto } from '../dto/create-details.recipe.dto.js';
 import { UpdateDetailsRecipeDto } from '../dto/update-details.recipe.dto.js';
 
-@Controller('details.recipe')
+@Controller('detalle-receta')
 export class DetailsRecipeController {
   constructor(private readonly detailsRecipeService: DetailsRecipeService) {}
 

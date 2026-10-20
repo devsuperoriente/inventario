@@ -10,7 +10,7 @@ export class Batch {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, unique: true, nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: false })
   code?: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'quantity_initial' })

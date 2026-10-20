@@ -13,10 +13,12 @@ export class CreateBatchDto {
 
   @Type(() => Date)
   @IsDate()
-  date: Date;
+  @IsOptional()
+  date?: Date;
 
   @Type(() => Date)
   @IsDate()
+  @IsOptional()
   dateMatury: Date;
 
   @Type(() => Number)
@@ -25,10 +27,18 @@ export class CreateBatchDto {
   temperature?: number | null;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   observation: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   image: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  productId: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  providerId: number;
 }

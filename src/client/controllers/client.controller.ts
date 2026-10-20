@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ClientService } from './client.service.js';
-import { CreateClientDto } from './dto/create-client.dto.js';
-import { UpdateClientDto } from './dto/update-client.dto.js';
+import { CreateClientDto } from '../dto/create-client.dto.js';
+import { UpdateClientDto } from '../dto/update-client.dto.js';
+import { ClientService } from '../services/client.service.js';
 
-@Controller('client')
+@Controller('clientes')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 

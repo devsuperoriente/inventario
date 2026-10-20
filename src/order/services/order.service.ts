@@ -26,12 +26,16 @@ export class OrderService {
 
   async create(createOrderDto: CreateOrderDto) {
     try {
-      return await this.ordersRepository.save(createOrderDto);
+      const orderProduction = await this.ordersRepository.save({
+        ...createOrderDto,
+        client: { id: createOrderDto.clientId },
+      });
+      return await this.findOne(orderProduction.id);
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('Error al crear la orden');
+      throw new BadRequestException('Error al crear la orden de producción');
     }
   }
 

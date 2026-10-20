@@ -3,7 +3,7 @@ import { DetailsOrderService } from '../services/details.order.service.js';
 import { CreateDetailsOrderDto } from '../dto/create-details.order.dto.js';
 import { UpdateDetailsOrderDto } from '../dto/update-details.order.dto.js';
 
-@Controller('details.order')
+@Controller('detalle-pedido')
 export class DetailsOrderController {
   constructor(private readonly detailsOrderService: DetailsOrderService) {}
 

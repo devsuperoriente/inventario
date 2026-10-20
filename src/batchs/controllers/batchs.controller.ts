@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { BatchsService } from './batchs.service.js';
-import { CreateBatchDto } from './dto/create-batch.dto.js';
-import { UpdateBatchDto } from './dto/update-batch.dto.js';
+import { BatchsService } from '../services/batchs.service.js';
+import { CreateBatchDto } from '../dto/create-batch.dto.js';
+import { UpdateBatchDto } from '../dto/update-batch.dto.js';
 
 @Controller('batchs')
 export class BatchsController {
@@ -20,6 +20,11 @@ export class BatchsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.batchsService.findOne(+id);
+  }
+
+  @Get('/code/:id')
+  findBatchsByCode(@Param('id') id: string) {
+    return this.batchsService.getBatchByCode(id);
   }
 
   @Patch(':id')

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrderProductionDto {
   @IsString()
@@ -10,9 +10,16 @@ export class CreateOrderProductionDto {
   @IsDate()
   date: Date;
 
+  @IsString()
+  @IsOptional()
+  observation: string;
+
   @IsNumber()
   stateId: number;
 
+  @Type(() => Number)
   @IsNumber()
   productId: number;
+
+
 }

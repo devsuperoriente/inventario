@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateRawMaterialConsumptionDto } from './dto/create-raw.material.consumption.dto.js';
-import { UpdateRawMaterialConsumptionDto } from './dto/update-raw.material.consumption.dto.js';
-import { RawMaterialConsumption } from './entities/raw.material.consumption.entity.js';
+import { CreateRawMaterialConsumptionDto } from '../dto/create-raw.material.consumption.dto.js';
+import { UpdateRawMaterialConsumptionDto } from '../dto/update-raw.material.consumption.dto.js';
+import { RawMaterialConsumption } from '../entities/raw.material.consumption.entity.js';
 
 @Injectable()
 export class RawMaterialConsumptionService {

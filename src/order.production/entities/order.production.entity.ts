@@ -4,6 +4,7 @@ import { State } from './state.entity.js';
 import { Product } from '../../products/entities/product.entity.js';
 import { RawMaterialConsumption } from '../../raw.material.consumption/entities/raw.material.consumption.entity.js';
 import { InventoryMovement } from '../../inventory.movement/entities/inventory.movement.entity.js';
+import { User } from '../../users/entities/user.entity.js';
 
 @Entity({ name: 'order_production' })
 export class OrderProduction {
@@ -22,7 +23,7 @@ export class OrderProduction {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'quantity_produced' })
   quantityProduced: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable:true })
   observation: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
@@ -38,6 +39,10 @@ export class OrderProduction {
   @ManyToOne(() => Product, (product) => product.ordersProduction, { nullable: false })
   @JoinColumn({ name: 'product_id' })
   product: Relation<Product>;
+
+  @ManyToOne(() => User, (user) => user.ordersProduction, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user: Relation<User>;
 
   @OneToMany(() => RawMaterialConsumption, (rawMaterial) => rawMaterial.ordersProduction)
   rawMaterials: RawMaterialConsumption[];

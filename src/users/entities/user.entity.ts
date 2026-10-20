@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BeforeInsert, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { Profile } from './profile.entity.js';
 import { Exclude } from 'class-transformer';
+import { OrderProduction } from '../../order.production/entities/order.production.entity.js';
 
 
 @Entity({ name: 'users' })
@@ -28,4 +29,7 @@ export class User {
   @OneToOne(() => Profile, { nullable: false, cascade: true })
   @JoinColumn({ name: 'profile_id' })
   profile: Relation<Profile>;
+
+  @OneToMany(() => OrderProduction, (ordersProduction) => ordersProduction.user)
+  ordersProduction: OrderProduction[];
 }

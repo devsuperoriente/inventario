@@ -29,11 +29,12 @@ export class OrderProductionService {
     return orderProduction;
   }
 
-  async create(createOrderProductionDto: CreateOrderProductionDto) {
+  async create(createOrderProductionDto: CreateOrderProductionDto, userId: number) {
     const { stateId, productId, ...orderProductionFields } = createOrderProductionDto;
     try {
       const orderProduction = await this.orderProductionsRepository.save({
         ...orderProductionFields,
+        user: { id: userId },
         state: { id: stateId },
         product: { id: productId },
       });

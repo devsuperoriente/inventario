@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateBatchDto } from './dto/create-batch.dto.js';
-import { UpdateBatchDto } from './dto/update-batch.dto.js';
-import { Batch } from './entities/batch.entity.js';
+import { CreateBatchDto } from '../dto/create-batch.dto.js';
+import { UpdateBatchDto } from '../dto/update-batch.dto.js';
+import { Batch } from '../entities/batch.entity.js';
 
 @Injectable()
 export class BatchsService {
@@ -13,20 +13,54 @@ export class BatchsService {
   ) {}
 
   findAll() {
-    return this.batchsRepository.find();
+    return this.batchsRepository.find({
+      relations: {
+        product: true,
+        provider: true,
+      },
+    });
   }
 
   async findOne(id: number) {
-    const batch = await this.batchsRepository.findOne({ where: { id } });
+    const batch = await this.batchsRepository.findOne({
+      where: { id },
+      relations: {
+        product: true,
+        provider: true
+      }
+    });
     if (!batch) {
       throw new NotFoundException(`Batch with ID ${id} not found`);
     }
     return batch;
   }
 
+  async getBatchByCode(code: string) {
+    const batch = await this.batchsRepository.find({
+      where: { code },
+      relations: {
+        product: true,
+        provider: true,
+      },
+    });
+
+    if (!batch) {
+      throw new NotFoundException(
+        `Batch with code ${code} not found`,
+      );
+    }
+
+    return batch;
+  }
+
   async create(createBatchDto: CreateBatchDto) {
     try {
-      return await this.batchsRepository.save(createBatchDto);
+      return await this.batchsRepository.save({
+        ...createBatchDto,
+        provider: { id: createBatchDto.providerId },
+        product: { id: createBatchDto.productId },
+
+      });
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);

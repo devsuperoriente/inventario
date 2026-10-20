@@ -3,7 +3,7 @@ import { InventoryMovementService } from '../services/inventory.movement.service
 import { CreateInventoryMovementDto } from '../dto/create-inventory.movement.dto.js';
 import { UpdateInventoryMovementDto } from '../dto/update-inventory.movement.dto.js';
 
-@Controller('inventory.movement')
+@Controller('movimiento-inventario')
 export class InventoryMovementController {
   constructor(private readonly inventoryMovementService: InventoryMovementService) {}
 

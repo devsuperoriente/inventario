@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BatchsService } from './batchs.service.js';
-import { Batch } from './entities/batch.entity.js';
+import { Batch } from '../entities/batch.entity.js';
 
 describe('BatchsService', () => {
   let service: BatchsService;

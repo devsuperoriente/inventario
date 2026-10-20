@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
-import { ProvidersService } from './providers.service.js';
-import { CreateProviderDto } from './dto/create-provider.dto.js';
-import { UpdateProviderDto } from './dto/update-provider.dto.js';
+import { ProvidersService } from '../services/providers.service.js';
+import { CreateProviderDto } from '../dto/create-provider.dto.js';
+import { UpdateProviderDto } from '../dto/update-provider.dto.js';
 
 @Controller('providers')
 export class ProvidersController {

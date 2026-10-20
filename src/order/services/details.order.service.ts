@@ -25,13 +25,19 @@ export class DetailsOrderService {
   }
 
   async create(createDetailsOrderDto: CreateDetailsOrderDto) {
+
     try {
-      return await this.detailsOrderRepository.save(createDetailsOrderDto);
+      const orderDetail = await this.detailsOrderRepository.save({
+        ...createDetailsOrderDto,
+        order: { id: createDetailsOrderDto.orderId },
+        product: { id: createDetailsOrderDto.productId },
+      });
+      return await this.findOne(orderDetail.id);
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('Error al crear el detalle de la orden');
+      throw new BadRequestException('Error al crear el detalle de la receta');
     }
   }
 

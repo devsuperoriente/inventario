@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RawMaterialConsumptionController } from './raw.material.consumption.controller.js';
-import { RawMaterialConsumptionService } from './raw.material.consumption.service.js';
+import { RawMaterialConsumptionService } from '../services/raw.material.consumption.service.js';
 
 describe('RawMaterialConsumptionController', () => {
   let controller: RawMaterialConsumptionController;

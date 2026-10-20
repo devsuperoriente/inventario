@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Provider } from './entities/provider.entity.js';
-import { CreateProviderDto } from './dto/create-provider.dto.js';
-import { UpdateProviderDto } from './dto/update-provider.dto.js';
+import { Provider } from '../entities/provider.entity.js';
+import { CreateProviderDto } from '../dto/create-provider.dto.js';
+import { UpdateProviderDto } from '../dto/update-provider.dto.js';
 
 @Injectable()
 export class ProvidersService {

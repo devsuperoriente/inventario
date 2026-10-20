@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RawMaterialConsumptionService } from './raw.material.consumption.service.js';
-import { CreateRawMaterialConsumptionDto } from './dto/create-raw.material.consumption.dto.js';
-import { UpdateRawMaterialConsumptionDto } from './dto/update-raw.material.consumption.dto.js';
+import { RawMaterialConsumptionService } from '../services/raw.material.consumption.service.js';
+import { CreateRawMaterialConsumptionDto } from '../dto/create-raw.material.consumption.dto.js';
+import { UpdateRawMaterialConsumptionDto } from '../dto/update-raw.material.consumption.dto.js';
 
 @Controller('raw.material.consumption')
 export class RawMaterialConsumptionController {

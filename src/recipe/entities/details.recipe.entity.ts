@@ -11,7 +11,7 @@ export class DetailsRecipe {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   amount: number;
 
-  @Column({ type: 'varchar', length: 30, unique: true })
+  @Column({ type: 'varchar', length: 30, nullable: true })
   observation: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })

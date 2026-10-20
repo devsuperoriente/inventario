@@ -3,14 +3,14 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateRecipeDto {
   @IsString()
   @IsNotEmpty()
-  codigo: string;
+  code: string;
 
   @IsString()
   @IsNotEmpty()
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description: string;
 
   @IsString()

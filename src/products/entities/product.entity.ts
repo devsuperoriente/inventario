@@ -47,7 +47,7 @@ export class Product {
   @OneToMany(() => DetailsRecipe, (detail) => detail.product)
   detailsRecipe: DetailsRecipe[];
 
-  @OneToMany(() => DetailsOrder, (detail) => detail.product)
+  @OneToMany(() => DetailsOrder, (orderDetail) => orderDetail.product)
   detailsOrder: Relation<DetailsOrder>[];
 
   @OneToMany(() => OrderProduction, (orderProduction) => orderProduction.product)
