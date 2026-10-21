@@ -86,6 +86,11 @@ export class BatchsService {
     const batch = await this.findOne(id);
     try {
       await this.batchsRepository.remove(batch);
+
+      return {
+        success: true,
+        message: 'Lote eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);
@@ -93,4 +98,5 @@ export class BatchsService {
       throw new UnprocessableEntityException('Error al eliminar el lote');
     }
   }
+
 }

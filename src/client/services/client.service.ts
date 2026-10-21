@@ -50,13 +50,22 @@ export class ClientService {
 
   async remove(id: number) {
     const client = await this.findOne(id);
+
     try {
       await this.clientsRepository.remove(client);
+
+      return {
+        message: 'Cliente eliminado correctamente',
+        id: client.id,
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);
       }
-      throw new UnprocessableEntityException('Error al eliminar el cliente');
+
+      throw new UnprocessableEntityException(
+        'Error al eliminar el cliente',
+      );
     }
   }
 }

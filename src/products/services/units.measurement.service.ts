@@ -55,6 +55,10 @@ export class UnitsMeasurementService {
     const unitsMeasurement = await this.findOne(id);
     try {
       await this.unitsMeasurementRepository.remove(unitsMeasurement);
+      return {
+        success: true,
+        message: 'Unidad de medida eliminada correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

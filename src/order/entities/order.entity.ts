@@ -8,7 +8,7 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, name: 'number_order' })
+  @Column({ type: 'varchar', length: 100, name: 'number_order', nullable: true })
   numberOrder: string;
 
   @Column({ type: 'timestamp', name: 'date_order' })

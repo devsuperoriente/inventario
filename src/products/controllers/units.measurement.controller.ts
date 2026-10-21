@@ -3,7 +3,7 @@ import { UnitsMeasurementService } from '../services/units.measurement.service.j
 import { CreateUnitsMeasurementDto } from '../dto/create-units.measurement.dto.js';
 import { UpdateUnitsMeasurementDto } from '../dto/update-units.measurement.dto.js';
 
-@Controller('units.measurement')
+@Controller('unidades-medida')
 export class UnitsMeasurementController {
   constructor(private readonly unitsMeasurementService: UnitsMeasurementService) {}
 

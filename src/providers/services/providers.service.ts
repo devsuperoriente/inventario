@@ -52,14 +52,23 @@ export class ProvidersService {
   }
 
   async remove(id: number) {
-    const provider = await this.findOne(id);
+    const provider  = await this.findOne(id);
+
     try {
       await this.providersRepository.remove(provider);
+
+      return {
+        message: 'Proveedor eliminado correctamente',
+        id: provider.id,
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);
       }
-      throw new UnprocessableEntityException('Error al eliminar el proveedor');
+
+      throw new UnprocessableEntityException(
+        'Error al eliminar el proveedor',
+      );
     }
   }
 }

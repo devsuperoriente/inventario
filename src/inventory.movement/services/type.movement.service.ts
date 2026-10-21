@@ -52,6 +52,10 @@ export class TypeMovementService {
     const typeMovement = await this.findOne(id);
     try {
       await this.typeMovementsRepository.remove(typeMovement);
+      return {
+        success: true,
+        message: 'Tipo de movimiento eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

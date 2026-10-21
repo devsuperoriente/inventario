@@ -52,6 +52,10 @@ export class RecipeService {
     const recipe = await this.findOne(id);
     try {
       await this.recipesRepository.remove(recipe);
+      return {
+        success: true,
+        message: 'Receta eliminada correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

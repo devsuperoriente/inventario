@@ -62,6 +62,10 @@ export class DetailsRecipeService {
     const detailsRecipe = await this.findOne(id);
     try {
       await this.detailsRecipeRepository.remove(detailsRecipe);
+      return {
+        success: true,
+        message: 'Detalle de receta eliminada  correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

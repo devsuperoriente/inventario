@@ -71,6 +71,10 @@ export class InventoryMovementService {
     const inventoryMovement = await this.findOne(id);
     try {
       await this.inventoryMovementsRepository.remove(inventoryMovement);
+      return {
+        success: true,
+        message: 'Movimiento de inventario eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

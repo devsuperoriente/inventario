@@ -13,11 +13,20 @@ export class OrderService {
   ) {}
 
   findAll() {
-    return this.ordersRepository.find();
+    return this.ordersRepository.find({
+      relations: {
+        client:true
+      }
+    });
   }
 
   async findOne(id: number) {
-    const order = await this.ordersRepository.findOne({ where: { id } });
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: {
+        client:true
+      }
+    });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
@@ -26,16 +35,27 @@ export class OrderService {
 
   async create(createOrderDto: CreateOrderDto) {
     try {
-      const orderProduction = await this.ordersRepository.save({
+      // Crear la orden
+      const order = await this.ordersRepository.save({
         ...createOrderDto,
         client: { id: createOrderDto.clientId },
       });
-      return await this.findOne(orderProduction.id);
+
+      // Generar consecutivo
+      order.numberOrder = `OP-${order.id.toString().padStart(6, '0')}`;
+
+      // Guardar nuevamente
+      await this.ordersRepository.save(order);
+
+      return await this.findOne(order.id);
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
-      throw new BadRequestException('Error al crear la orden de producción');
+
+      throw new BadRequestException(
+        'Error al crear la orden de producción',
+      );
     }
   }
 
@@ -56,6 +76,10 @@ export class OrderService {
     const order = await this.findOne(id);
     try {
       await this.ordersRepository.remove(order);
+      return {
+        success: true,
+        message: 'Pedido eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

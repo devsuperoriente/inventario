@@ -55,6 +55,10 @@ export class CategorysService {
     const category = await this.findOne(id);
     try {
       await this.categoriesRepository.remove(category);
+      return {
+        success: true,
+        message: 'Categoria eliminada correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

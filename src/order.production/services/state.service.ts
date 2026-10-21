@@ -50,13 +50,22 @@ export class StateService {
 
   async remove(id: number) {
     const state = await this.findOne(id);
+
     try {
       await this.statesRepository.remove(state);
+
+      return {
+        success: true,
+        message: 'Estado eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);
       }
-      throw new UnprocessableEntityException('Error al eliminar el estado');
+
+      throw new UnprocessableEntityException(
+        'Error al eliminar el estado',
+      );
     }
   }
 }

@@ -69,6 +69,10 @@ export class RawMaterialConsumptionService {
     const consumption = await this.findOne(id);
     try {
       await this.rawMaterialConsumptionsRepository.remove(consumption);
+      return {
+        success: true,
+        message: 'Consumo de material eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

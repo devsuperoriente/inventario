@@ -55,16 +55,45 @@ export class ProductsService {
   async update(id: number, updateProductDto: UpdateProductDto) {
     try {
       const product = await this.findOne(id);
-      const updatedProduct = this.productsRepository.merge(product, updateProductDto);
-      return await this.productsRepository.save(updatedProduct);
+
+      const { categoryId, unitsMeasurementId, providerId, ...productData } = updateProductDto;
+
+      const updatedProduct = this.productsRepository.merge(
+        product,
+        productData,
+      );
+
+      // Actualizar las relaciones solo si llegan en el DTO
+      if (categoryId !== undefined) {
+        updatedProduct.category = { id: categoryId } as any;
+      }
+
+      if (unitsMeasurementId !== undefined) {
+        updatedProduct.unitsMeasurement = { id: unitsMeasurementId } as any;
+      }
+
+      await this.productsRepository.save(updatedProduct);
+
+      // Retornar el producto actualizado con sus relaciones
+      return await this.productsRepository.findOne({
+        where: { id },
+        relations: {
+          category: true,
+          unitsMeasurement: true,
+        },
+      });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
+
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);
       }
-      throw new UnprocessableEntityException('Error al actualizar el producto');
+
+      throw new UnprocessableEntityException(
+        'Error al actualizar el producto',
+      );
     }
   }
 
@@ -72,6 +101,10 @@ export class ProductsService {
     const product = await this.findOne(id);
     try {
       await this.productsRepository.remove(product);
+      return {
+        success: true,
+        message: 'Producto eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

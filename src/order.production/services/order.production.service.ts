@@ -70,6 +70,10 @@ export class OrderProductionService {
     const orderProduction = await this.findOne(id);
     try {
       await this.orderProductionsRepository.remove(orderProduction);
+      return {
+        success: true,
+        message: 'Orden de producción eliminada correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

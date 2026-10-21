@@ -13,11 +13,22 @@ export class DetailsOrderService {
   ) {}
 
   findAll() {
-    return this.detailsOrderRepository.find();
+    return this.detailsOrderRepository.find({
+      relations: {
+        product:true,
+        order:true
+      }
+    });
   }
 
   async findOne(id: number) {
-    const detailsOrder = await this.detailsOrderRepository.findOne({ where: { id } });
+    const detailsOrder = await this.detailsOrderRepository.findOne({
+      where: { id },
+      relations: {
+        product:true,
+        order:true
+      }
+    });
     if (!detailsOrder) {
       throw new NotFoundException(`Order details with ID ${id} not found`);
     }
@@ -58,6 +69,10 @@ export class DetailsOrderService {
     const detailsOrder = await this.findOne(id);
     try {
       await this.detailsOrderRepository.remove(detailsOrder);
+      return {
+        success: true,
+        message: 'Detalle pedido eliminado correctamente',
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

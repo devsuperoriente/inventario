@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { StateService } from '../services/state.service.js';
 import { CreateStateDto } from '../dto/create-state.dto.js';
 import { UpdateStateDto } from '../dto/update-state.dto.js';
@@ -22,7 +22,7 @@ export class StateController {
     return this.stateService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateStateDto: UpdateStateDto) {
     return this.stateService.update(+id, updateStateDto);
   }
