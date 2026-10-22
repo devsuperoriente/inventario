@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateProductDto } from '../dto/create-product.dto.js';
 import { UpdateProductDto } from '../dto/update-product.dto.js';
 import { Product } from '../entities/product.entity.js';
@@ -35,6 +35,20 @@ export class ProductsService {
     return product;
   }
 
+  async findByName(name: string): Promise<Product> {
+    const product = await this.productsRepository.findOne({
+      // ILike busca sin distinguir mayúsculas y minúsculas.
+      // Los símbolos '%' sirven para buscar coincidencias parciales (que contenga el texto).
+      where: { name: ILike(`%${name}%`) },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Producto con nombre "${name}" no encontrado`);
+    }
+
+    return product;
+  }
+
   async create(createProductDto: CreateProductDto) {
     try {
       const product = await this.productsRepository.save({
@@ -58,10 +72,7 @@ export class ProductsService {
 
       const { categoryId, unitsMeasurementId, providerId, ...productData } = updateProductDto;
 
-      const updatedProduct = this.productsRepository.merge(
-        product,
-        productData,
-      );
+      const updatedProduct = this.productsRepository.merge(product, productData);
 
       // Actualizar las relaciones solo si llegan en el DTO
       if (categoryId !== undefined) {
@@ -91,9 +102,7 @@ export class ProductsService {
         throw new UnprocessableEntityException(error.message);
       }
 
-      throw new UnprocessableEntityException(
-        'Error al actualizar el producto',
-      );
+      throw new UnprocessableEntityException('Error al actualizar el producto');
     }
   }
 

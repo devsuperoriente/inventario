@@ -63,9 +63,7 @@ export class StateService {
         throw new UnprocessableEntityException(error.message);
       }
 
-      throw new UnprocessableEntityException(
-        'Error al eliminar el estado',
-      );
+      throw new UnprocessableEntityException('Error al eliminar el estado');
     }
   }
 }

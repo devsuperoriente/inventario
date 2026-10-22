@@ -14,10 +14,10 @@ export class DetailsRecipeService {
 
   findAll() {
     return this.detailsRecipeRepository.find({
-      relations : {
-        product:true,
-        recipe: true
-      }
+      relations: {
+        product: true,
+        recipe: true,
+      },
     });
   }
 
@@ -34,7 +34,7 @@ export class DetailsRecipeService {
       const orderProduction = await this.detailsRecipeRepository.save({
         ...createDetailsRecipeDto,
         recipe: { id: createDetailsRecipeDto.recipeId },
-        product : { id: createDetailsRecipeDto.productId }
+        product: { id: createDetailsRecipeDto.productId },
       });
       return await this.findOne(orderProduction.id);
     } catch (error) {

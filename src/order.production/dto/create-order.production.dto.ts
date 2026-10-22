@@ -20,6 +20,4 @@ export class CreateOrderProductionDto {
   @Type(() => Number)
   @IsNumber()
   productId: number;
-
-
 }

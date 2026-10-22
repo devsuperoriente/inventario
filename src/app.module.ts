@@ -13,6 +13,7 @@ import { InventoryMovementModule } from './inventory.movement/inventory.movement
 import { RawMaterialConsumptionModule } from './raw.material.consumption/raw.material.consumption.module.js';
 import { BatchsModule } from './batchs/batchs.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { RolesModule } from './roles/roles.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AuthModule } from './auth/auth.module.js';
     RawMaterialConsumptionModule,
     InventoryMovementModule,
     AuthModule,
+    RolesModule,
   ],
 })
 export class AppModule {}

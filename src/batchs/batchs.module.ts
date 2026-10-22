@@ -6,9 +6,10 @@ import { Batch } from './entities/batch.entity.js';
 import { Provider } from '../providers/entities/provider.entity.js';
 import { ProvidersController } from '../providers/controllers/providers.controller.js';
 import { ProvidersService } from '../providers/services/providers.service.js';
+import { RolesModule } from '../roles/roles.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Batch, Provider])],
+  imports: [TypeOrmModule.forFeature([Batch, Provider]), RolesModule],
   controllers: [BatchsController, ProvidersController],
   providers: [BatchsService, ProvidersService],
   exports: [BatchsService, ProvidersService],

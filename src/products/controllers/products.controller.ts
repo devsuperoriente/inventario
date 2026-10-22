@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put } 
 import { ProductsService } from '../services/products.service.js';
 import { CreateProductDto } from '../dto/create-product.dto.js';
 import { UpdateProductDto } from '../dto/update-product.dto.js';
+import { ApiCookieAuth } from '@nestjs/swagger';
 
+@ApiCookieAuth('access_token')
 @Controller('productos')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -15,6 +17,11 @@ export class ProductsController {
   @Get()
   findAll() {
     return this.productsService.findAll();
+  }
+
+  @Get('search/:name')
+  async getProductByName(@Param('name') name: string) {
+    return await this.productsService.findByName(name);
   }
 
   @Get(':id')

@@ -15,8 +15,8 @@ export class OrderService {
   findAll() {
     return this.ordersRepository.find({
       relations: {
-        client:true
-      }
+        client: true,
+      },
     });
   }
 
@@ -24,8 +24,8 @@ export class OrderService {
     const order = await this.ordersRepository.findOne({
       where: { id },
       relations: {
-        client:true
-      }
+        client: true,
+      },
     });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
@@ -53,9 +53,7 @@ export class OrderService {
         throw new BadRequestException(error.message);
       }
 
-      throw new BadRequestException(
-        'Error al crear la orden de producción',
-      );
+      throw new BadRequestException('Error al crear la orden de producción');
     }
   }
 

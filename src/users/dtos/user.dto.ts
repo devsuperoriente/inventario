@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateProfileDto, UpdateProfileDto } from './profile.dto.js';
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
@@ -7,29 +7,34 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({description: 'The username of user',})
+  @ApiProperty({ description: 'The username of user' })
   username: string;
 
   @IsEmail()
   @IsOptional()
-  @ApiProperty({description: 'The email of user',})
+  @ApiProperty({ description: 'The email of user' })
   email?: string;
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({description: 'The password of user',})
+  @ApiProperty({ description: 'The password of user' })
   password: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  @ApiProperty({ description: 'The ID of the role' })
+  roleId: number;
 
   @ValidateNested()
   @Type(() => CreateProfileDto)
   @IsNotEmpty()
   profile: CreateProfileDto;
-
 }
 
 export class UpdateUserDto extends PartialType(OmitType(CreateUserDto, ['profile'])) {
   @ValidateNested()
   @Type(() => UpdateProfileDto)
-  @IsNotEmpty()
+  @IsOptional()
   profile: UpdateProfileDto;
 }

@@ -12,7 +12,7 @@ export class Recipe {
   @Column({ type: 'varchar', length: 30, unique: true })
   name: string;
 
-  @Column({ type: 'varchar', length: 30, nullable: true})
+  @Column({ type: 'varchar', length: 30, nullable: true })
   description: string;
 
   @Column({ type: 'varchar', length: 30, unique: true })

@@ -15,9 +15,9 @@ export class DetailsOrderService {
   findAll() {
     return this.detailsOrderRepository.find({
       relations: {
-        product:true,
-        order:true
-      }
+        product: true,
+        order: true,
+      },
     });
   }
 
@@ -25,9 +25,9 @@ export class DetailsOrderService {
     const detailsOrder = await this.detailsOrderRepository.findOne({
       where: { id },
       relations: {
-        product:true,
-        order:true
-      }
+        product: true,
+        order: true,
+      },
     });
     if (!detailsOrder) {
       throw new NotFoundException(`Order details with ID ${id} not found`);
@@ -36,7 +36,6 @@ export class DetailsOrderService {
   }
 
   async create(createDetailsOrderDto: CreateDetailsOrderDto) {
-
     try {
       const orderDetail = await this.detailsOrderRepository.save({
         ...createDetailsOrderDto,
@@ -53,10 +52,33 @@ export class DetailsOrderService {
   }
 
   async update(id: number, updateDetailsOrderDto: UpdateDetailsOrderDto) {
-    const detailsOrder = await this.findOne(id);
     try {
-      const updatedDetailsOrder = this.detailsOrderRepository.merge(detailsOrder, updateDetailsOrderDto);
-      return await this.detailsOrderRepository.save(updatedDetailsOrder);
+      const detailsOrder = await this.findOne(id);
+
+      const { productId,orderId, ...detailData } = updateDetailsOrderDto;
+
+      const updatedDetailOrder = this.detailsOrderRepository.merge(detailsOrder, detailData);
+
+      // Actualizar las relaciones solo si llegan en el DTO
+      if (productId !== undefined) {
+        updatedDetailOrder.product = { id: productId } as any;
+      }
+
+      if (orderId !== undefined) {
+        updatedDetailOrder.order = { id: orderId } as any;
+      }
+
+      await this.detailsOrderRepository.save(updatedDetailOrder);
+
+      // Retornar el producto actualizado con sus relaciones
+      return await this.detailsOrderRepository.findOne({
+        where: { id },
+        relations: {
+          product:true,
+          order:true
+        },
+      });
+
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

@@ -22,6 +22,4 @@ export class Profile {
 
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'updated_at' })
   updatedAt: Date;
-
-
 }

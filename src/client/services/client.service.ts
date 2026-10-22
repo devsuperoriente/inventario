@@ -63,9 +63,7 @@ export class ClientService {
         throw new UnprocessableEntityException(error.message);
       }
 
-      throw new UnprocessableEntityException(
-        'Error al eliminar el cliente',
-      );
+      throw new UnprocessableEntityException('Error al eliminar el cliente');
     }
   }
 }

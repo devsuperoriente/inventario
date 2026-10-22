@@ -23,7 +23,7 @@ export class OrderProduction {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'quantity_produced' })
   quantityProduced: number;
 
-  @Column({ type: 'varchar', length: 255, nullable:true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   observation: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })

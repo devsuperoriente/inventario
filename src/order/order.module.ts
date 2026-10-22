@@ -6,9 +6,10 @@ import { Order } from './entities/order.entity.js';
 import { DetailsOrder } from './entities/details.order.entity.js';
 import { DetailsOrderController } from './controllers/details.order.controller.js';
 import { DetailsOrderService } from './services/details.order.service.js';
+import { RolesModule } from '../roles/roles.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, DetailsOrder])],
+  imports: [TypeOrmModule.forFeature([Order, DetailsOrder]), RolesModule],
   controllers: [OrderController, DetailsOrderController],
   providers: [OrderService, DetailsOrderService],
   exports: [OrderService, DetailsOrderService],

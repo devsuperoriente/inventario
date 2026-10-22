@@ -1,3 +1,4 @@
-export interface Payload{
-  sub:number;
+export interface Payload {
+  sub: number;
+  sid: string;
 }

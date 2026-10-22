@@ -1,12 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards } from '@nestjs/common';
 import { OrderService } from '../services/order.service.js';
 import { CreateOrderDto } from '../dto/create-order.dto.js';
 import { UpdateOrderDto } from '../dto/update-order.dto.js';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard.js';
+import { RequirePermissions } from '../../roles/decorators/require-permissions.decorator.js';
+import { RolesGuard } from '../../roles/guards/roles.guard.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('pedidos')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RequirePermissions('orders:create')
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);

@@ -17,5 +17,4 @@ export class CreateDetailsRecipeDto {
   @Type(() => Number)
   @IsNumber()
   productId: number;
-
 }

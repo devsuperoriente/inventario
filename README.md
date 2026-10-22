@@ -52,6 +52,43 @@ To stop the service without deleting its data:
 $ docker compose down
 ```
 
+## Roles and permissions
+
+Run the database migrations with `npm run migration:run`. The roles migration
+creates these initial roles:
+
+| Role | Permission |
+| --- | --- |
+| `admin` | All permissions |
+| `supervisor` | Create orders |
+| `DOSIFICADOR` | Read production orders |
+| `recepcion de materia prima` | Manage batches/lots |
+
+Roles can be managed through `/roles` and assigned through
+`PATCH /users/:id/role/:roleId`. Both operations require an administrator.
+To bootstrap the first administrator, assign the seeded `admin` role directly
+to a trusted existing user in PostgreSQL:
+
+```sql
+UPDATE users
+SET role_id = (SELECT id FROM roles WHERE name = 'admin')
+WHERE username = '<trusted-username>';
+```
+
+The role assignments are checked on each authenticated request, so changes
+take effect without waiting for a new access token. The role permissions protect
+order creation (`POST /pedidos` and `POST /detalle-pedidos`), production-order
+queries (`GET /ordenes-produccion`), and all batch/lot operations (`/batchs`).
+
+Authentication uses `POST /auth/login` to set HTTP-only `access_token` and
+`refresh_token` cookies. Browser clients should use `credentials: 'include'`
+for API requests and do not need to store or manually send JWTs. Call
+`POST /auth/refresh` to rotate both cookies, and `POST /auth/logout` to revoke
+the session and clear them. Apply all migrations before using these endpoints;
+existing access tokens must be replaced by logging in again. In production,
+use HTTPS; if the frontend and backend are on different sites, configure the
+cookies for cross-site use (`SameSite=None; Secure`) and add CSRF protection.
+
 ## Compile and run the project
 
 ```bash

@@ -26,8 +26,8 @@ export class BatchsService {
       where: { id },
       relations: {
         product: true,
-        provider: true
-      }
+        provider: true,
+      },
     });
     if (!batch) {
       throw new NotFoundException(`Batch with ID ${id} not found`);
@@ -45,9 +45,7 @@ export class BatchsService {
     });
 
     if (!batch) {
-      throw new NotFoundException(
-        `Batch with code ${code} not found`,
-      );
+      throw new NotFoundException(`Batch with code ${code} not found`);
     }
 
     return batch;
@@ -59,7 +57,6 @@ export class BatchsService {
         ...createBatchDto,
         provider: { id: createBatchDto.providerId },
         product: { id: createBatchDto.productId },
-
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -98,5 +95,4 @@ export class BatchsService {
       throw new UnprocessableEntityException('Error al eliminar el lote');
     }
   }
-
 }
