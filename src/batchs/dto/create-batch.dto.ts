@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsNumber, IsOptional, IsString, IsNotEmpty } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateBatchDto {
   @IsString()
@@ -7,19 +7,24 @@ export class CreateBatchDto {
   code?: string;
 
   @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  quantityInitial: number;
+
+  @Type(() => Number)
   @IsNumber()
   @IsOptional()
-  quantityInitial?: number | null;
+  quantityAvailable?: number | null;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  date?: Date;
+  entryDate?: Date;
 
   @Type(() => Date)
   @IsDate()
   @IsOptional()
-  dateMatury: Date;
+  expirationDate: Date;
 
   @Type(() => Number)
   @IsNumber()
@@ -32,7 +37,7 @@ export class CreateBatchDto {
 
   @IsString()
   @IsOptional()
-  image: string;
+  imageUrl: string;
 
   @Type(() => Number)
   @IsNumber()

@@ -14,22 +14,25 @@ export class Batch {
   code?: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'quantity_initial' })
-  quantityInitial: number | null;
+  quantityInitial: number | string | null;
 
-  @Column({ type: 'timestamp' })
-  date: Date;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false, default: 0, name: 'quantity_available' })
+  quantityAvailable: number | string;
 
-  @Column({ type: 'timestamp', name: 'date_matury' })
-  dateMatury: Date;
+  @Column({ type: 'timestamp', name: 'entry_date' })
+  entryDate: Date;
+
+  @Column({ type: 'timestamp', name: 'expiration_date' })
+  expirationDate: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   temperature: number | null;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   observation: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  image: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  imageUrl: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;

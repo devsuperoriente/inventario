@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateOrderDto } from '../dto/create-order.dto.js';
 import { UpdateOrderDto } from '../dto/update-order.dto.js';
 import { Order } from '../entities/order.entity.js';
@@ -31,6 +31,14 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
     return order;
+  }
+
+  async getOrdersByDate(date: string) {
+    const startDate = new Date(`${date}T00:00:00.000`);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    return this.ordersRepository.createQueryBuilder('order').leftJoinAndSelect('order.client', 'client').where('order.createdAt >= :startDate', { startDate }).andWhere('order.createdAt < :endDate', { endDate }).orderBy('order.createdAt', 'DESC').getMany();
   }
 
   async create(createOrderDto: CreateOrderDto) {

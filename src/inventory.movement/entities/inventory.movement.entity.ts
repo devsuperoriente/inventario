@@ -10,13 +10,13 @@ export class InventoryMovement {
   id: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  quantity: number | null;
+  quantity: number | string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'balance_previus' })
-  balancePrevius: number | null;
+  balancePrevius: number | string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'balance_current' })
-  balanceCurrent: number | null;
+  balanceCurrent: number | string | null;
 
   @Column({ type: 'timestamp' })
   date: Date;
@@ -34,9 +34,9 @@ export class InventoryMovement {
   @JoinColumn({ name: 'batch_id' })
   batch: Relation<Batch>;
 
-  @ManyToOne(() => OrderProduction, (orderProduction) => orderProduction.invetoryMovements, { nullable: false })
+  @ManyToOne(() => OrderProduction, (orderProduction) => orderProduction.inventoryMovements, { nullable: true })
   @JoinColumn({ name: 'order_production_id' })
-  ordersProduction: Relation<OrderProduction>;
+  ordersProduction: Relation<OrderProduction> | null;
 
   @ManyToOne(() => TypeMovement, (typeMovement) => typeMovement.inventoryMovements, { nullable: false })
   @JoinColumn({ name: 'type_movement_id' })

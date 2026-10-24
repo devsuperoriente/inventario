@@ -61,7 +61,7 @@ creates these initial roles:
 | --- | --- |
 | `admin` | All permissions |
 | `supervisor` | Create orders |
-| `DOSIFICADOR` | Read production orders |
+| `dosificador` | Read production orders and consume materials |
 | `recepcion de materia prima` | Manage batches/lots |
 
 Roles can be managed through `/roles` and assigned through
@@ -78,7 +78,44 @@ WHERE username = '<trusted-username>';
 The role assignments are checked on each authenticated request, so changes
 take effect without waiting for a new access token. The role permissions protect
 order creation (`POST /pedidos` and `POST /detalle-pedidos`), production-order
-queries (`GET /ordenes-produccion`), and all batch/lot operations (`/batchs`).
+queries (`GET /ordenes-produccion`), production material consumption, and all
+batch/lot operations (`/batchs`).
+
+## Production material requirements
+
+Recipes are linked to their finished product through `productId` when creating
+or updating a recipe. A product must have the `Producto Final` category to be
+assigned to a recipe; `DetailsRecipe.product` remains exclusively the
+raw-material product. Run the migrations before using this relationship.
+Existing recipes remain unassigned by the migration and must be linked to their
+finished products before they can be used for a production-order calculation.
+
+`GET /ordenes-produccion/:id/insumos-requeridos` calculates each material's
+required quantity as `detail amount * scheduled quantity / recipe base yield`.
+`baseYield` is the quantity of finished product represented by the
+recipe's material amounts; it must be greater than zero. If more than one
+active recipe is linked to the product, the endpoint returns an error instead
+of choosing one. Calculated quantities retain decimal precision to ten places
+for repeating divisions. Each finished product should have one active recipe.
+This endpoint is a read-only calculation and does not change inventory.
+
+`POST /ordenes-produccion/:id/consumos-materia-prima` records the consumption
+for an order in `EN DOSIFICACION`. It accepts no material quantities from the
+client: the server recalculates them from the active recipe and the order's
+scheduled quantity. Since inventory and consumption quantities use
+`numeric(10,2)`, amounts are rounded half-up to two decimal places before
+they are persisted.
+
+The operation allocates stock from non-expired lots using FEFO (earliest
+expiration first). In a single database transaction, it records each
+consumption, updates the lot's available quantity, and creates a `SALIDA`
+inventory movement with the before/after balances. A retry after successful
+consumption returns a conflict instead of consuming stock twice; insufficient
+stock or a missing active `SALIDA` movement type aborts the entire operation.
+The previous direct create/update/delete endpoints for raw-material
+consumption records have been removed so these records cannot bypass the
+inventory transaction. The `dosificador` role receives the
+`production-orders:consume` permission from the new migration.
 
 Authentication uses `POST /auth/login` to set HTTP-only `access_token` and
 `refresh_token` cookies. Browser clients should use `credentials: 'include'`

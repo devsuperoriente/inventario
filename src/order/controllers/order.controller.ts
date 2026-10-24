@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Query } from '@nestjs/common';
 import { OrderService } from '../services/order.service.js';
 import { CreateOrderDto } from '../dto/create-order.dto.js';
 import { UpdateOrderDto } from '../dto/update-order.dto.js';
@@ -22,6 +22,11 @@ export class OrderController {
   @Get()
   findAll() {
     return this.orderService.findAll();
+  }
+
+  @Get('by-date')
+  getOrdersByDate(@Query('date') date: string) {
+    return this.orderService.getOrdersByDate(date);
   }
 
   @Get(':id')

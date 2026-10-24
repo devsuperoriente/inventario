@@ -24,7 +24,7 @@ export class UsersService {
   async getUserById(id: number) {
     const user = await this.usersRepository.findOne({
       where: { id }, // <--- ¡Esto es lo que faltaba!
-      relations: { profile: true, role: true }
+      relations: { profile: true, role: true },
     });
 
     if (!user) {
@@ -59,7 +59,6 @@ export class UsersService {
       // 2. Guardamos la instancia creada
       const savedUser = await this.usersRepository.save(newUser);
       return savedUser;
-
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
@@ -93,7 +92,7 @@ export class UsersService {
         where: { id },
         relations: {
           role: true,
-          profile: true
+          profile: true,
         },
       });
     } catch (error) {

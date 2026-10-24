@@ -55,7 +55,7 @@ export class DetailsOrderService {
     try {
       const detailsOrder = await this.findOne(id);
 
-      const { productId,orderId, ...detailData } = updateDetailsOrderDto;
+      const { productId, orderId, ...detailData } = updateDetailsOrderDto;
 
       const updatedDetailOrder = this.detailsOrderRepository.merge(detailsOrder, detailData);
 
@@ -74,11 +74,10 @@ export class DetailsOrderService {
       return await this.detailsOrderRepository.findOne({
         where: { id },
         relations: {
-          product:true,
-          order:true
+          product: true,
+          order: true,
         },
       });
-
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

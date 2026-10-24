@@ -4,7 +4,6 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
@@ -22,14 +21,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  const config = new DocumentBuilder()
-    .setTitle('Inventory API')
-    .setDescription('The inventory API description')
-    .setVersion('1.0')
-    .addTag('inventory')
-    .addCookieAuth('access_token')
-    .addBearerAuth()
-    .build();
+  const config = new DocumentBuilder().setTitle('Inventory API').setDescription('The inventory API description').setVersion('1.0').addTag('inventory').addCookieAuth('access_token').addBearerAuth().build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory, {
     jsonDocumentUrl: 'swagger/json',

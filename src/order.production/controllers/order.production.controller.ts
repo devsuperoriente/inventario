@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
 import { OrderProductionService } from '../services/order.production.service.js';
 import { CreateOrderProductionDto } from '../dto/create-order.production.dto.js';
 import { UpdateOrderProductionDto } from '../dto/update-order.production.dto.js';
@@ -11,7 +11,8 @@ import { RolesGuard } from '../../roles/guards/roles.guard.js';
 export class OrderProductionController {
   constructor(private readonly orderProductionService: OrderProductionService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RequirePermissions('production-orders:create')
   @Post()
   create(@Body() createOrderProductionDto: CreateOrderProductionDto, @Request() req: any) {
     const payload = req.user as Payload;
@@ -19,19 +20,23 @@ export class OrderProductionController {
     return this.orderProductionService.create(createOrderProductionDto, userId);
   }
 
-  /*@UseGuards(JwtAuthGuard)
-  @Post()
-  createUser(@Body() user: CreateUserDto,@Request() req: any) {
-    const payload = req.user as Payload;
-    const userId = payload.sub;
-    return this.usersService.create(user, userId);
-  }*/
-
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RequirePermissions('production-orders:read')
   findAll() {
     return this.orderProductionService.findAll();
+  }
+
+  @Get(':id/insumos-requeridos')
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //  @RequirePermissions('production-orders:read')
+  findRequiredMaterials(@Param('id', ParseIntPipe) id: number) {
+    return this.orderProductionService.findRequiredMaterials(id);
+  }
+
+  @Post(':id/consumos-materia-prima')
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@RequirePermissions('production-orders:consume')
+  consumeRequiredMaterials(@Param('id', ParseIntPipe) id: number) {
+    return this.orderProductionService.consumeRequiredMaterials(id);
   }
 
   @Get(':id')

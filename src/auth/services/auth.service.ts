@@ -48,11 +48,7 @@ export class AuthService {
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
     });
 
-    const [accessToken, permissions] = await Promise.all([
-      this.generateToken({ id: userId }, sessionId),
-      this.getUserPermissions(userId),
-      this.refreshTokensRepository.save(refreshTokenEntity),
-    ]);
+    const [accessToken, permissions] = await Promise.all([this.generateToken({ id: userId }, sessionId), this.getUserPermissions(userId), this.refreshTokensRepository.save(refreshTokenEntity)]);
 
     return { access_token: accessToken, refresh_token: refreshToken, permissions };
   }
@@ -79,11 +75,7 @@ export class AuthService {
       }
 
       // Buscamos permisos, generamos el access token y obtenemos el usuario en paralelo
-      const [permissions, access, userEntity] = await Promise.all([
-        this.getUserPermissions(userId),
-        this.generateToken({ id: userId }, sessionId),
-        manager.getRepository(User).findOne({ where: { id: userId } }),
-      ]);
+      const [permissions, access, userEntity] = await Promise.all([this.getUserPermissions(userId), this.generateToken({ id: userId }, sessionId), manager.getRepository(User).findOne({ where: { id: userId } })]);
 
       if (!userEntity) {
         throw new UnauthorizedException('Usuario no encontrado');
@@ -124,10 +116,7 @@ export class AuthService {
         return;
       }
 
-      await manager.getRepository(RefreshToken).update(
-        { sessionId: token.sessionId, revokedAt: IsNull() },
-        { revokedAt: new Date() },
-      );
+      await manager.getRepository(RefreshToken).update({ sessionId: token.sessionId, revokedAt: IsNull() }, { revokedAt: new Date() });
     });
   }
 

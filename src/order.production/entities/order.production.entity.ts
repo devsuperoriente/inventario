@@ -11,7 +11,7 @@ export class OrderProduction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, unique: true, name: 'number_order' })
+  @Column({ type: 'varchar', length: 100, name: 'number_order' })
   numberOrder?: string;
 
   @Column({ type: 'timestamp', name: 'date_order' })
@@ -48,7 +48,7 @@ export class OrderProduction {
   rawMaterials: RawMaterialConsumption[];
 
   @OneToMany(() => InventoryMovement, (invetoryMovement) => invetoryMovement.ordersProduction)
-  invetoryMovements: InventoryMovement[];
+  inventoryMovements: InventoryMovement[];
 }
 
 /*

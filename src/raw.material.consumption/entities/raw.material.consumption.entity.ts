@@ -9,7 +9,7 @@ export class RawMaterialConsumption {
   id: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  quantity: number | null;
+  quantity: number | string | null;
 
   @Column({ type: 'timestamp' })
   date: Date;

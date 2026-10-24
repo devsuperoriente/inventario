@@ -9,10 +9,10 @@ export class UnitsMeasurement {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'varchar', length: 30, unique: true, nullable: false })
+  @Column({ type: 'varchar', length: 10, unique: true, nullable: false })
   abbreviation: string;
 
-  @Column({ type: 'varchar', length: 30, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   description: string;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })

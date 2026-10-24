@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, ParseIntPipe } from '@nestjs/common';
 import { BatchsService } from '../services/batchs.service.js';
 import { CreateBatchDto } from '../dto/create-batch.dto.js';
 import { UpdateBatchDto } from '../dto/update-batch.dto.js';
@@ -22,23 +22,33 @@ export class BatchsController {
     return this.batchsService.findAll();
   }
 
+  @Get('existencias')
+  getStockSummary() {
+    return this.batchsService.getStockSummary();
+  }
+
+  @Get('producto/:productId/existencias')
+  getStockByProduct(@Param('productId', ParseIntPipe) productId: number) {
+    return this.batchsService.getStockByProduct(productId);
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.batchsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.batchsService.findOne(id);
   }
 
   @Get('/code/:id')
-  findBatchsByCode(@Param('id') id: string) {
-    return this.batchsService.getBatchByCode(id);
+  findBatchsByCode(@Param('id') code: string) {
+    return this.batchsService.getBatchByCode(code);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBatchDto: UpdateBatchDto) {
-    return this.batchsService.update(+id, updateBatchDto);
+  @Put(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateBatchDto: UpdateBatchDto) {
+    return this.batchsService.update(id, updateBatchDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.batchsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.batchsService.remove(id);
   }
 }

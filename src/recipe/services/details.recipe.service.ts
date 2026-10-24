@@ -15,14 +15,22 @@ export class DetailsRecipeService {
   findAll() {
     return this.detailsRecipeRepository.find({
       relations: {
-        product: true,
+        product: {
+          unitsMeasurement: true,
+        },
         recipe: true,
       },
     });
   }
 
   async findOne(id: number) {
-    const detailsRecipe = await this.detailsRecipeRepository.findOne({ where: { id } });
+    const detailsRecipe = await this.detailsRecipeRepository.findOne({
+      where: { id },
+      relations: {
+        product: true,
+        recipe: true,
+      },
+    });
     if (!detailsRecipe) {
       throw new NotFoundException(`Recipe details with ID ${id} not found`);
     }
@@ -46,10 +54,32 @@ export class DetailsRecipeService {
   }
 
   async update(id: number, updateDetailsRecipeDto: UpdateDetailsRecipeDto) {
-    const detailsRecipe = await this.findOne(id);
     try {
-      const updatedDetailsRecipe = this.detailsRecipeRepository.merge(detailsRecipe, updateDetailsRecipeDto);
-      return await this.detailsRecipeRepository.save(updatedDetailsRecipe);
+      const detailsRecipe = await this.findOne(id);
+
+      const { productId, recipeId, ...detailData } = updateDetailsRecipeDto;
+
+      const updatedDetailOrder = this.detailsRecipeRepository.merge(detailsRecipe, detailData);
+
+      // Actualizar las relaciones solo si llegan en el DTO
+      if (productId !== undefined) {
+        updatedDetailOrder.product = { id: productId } as any;
+      }
+
+      if (recipeId !== undefined) {
+        updatedDetailOrder.recipe = { id: recipeId } as any;
+      }
+
+      await this.detailsRecipeRepository.save(updatedDetailOrder);
+
+      // Retornar el producto actualizado con sus relaciones
+      return await this.detailsRecipeRepository.findOne({
+        where: { id },
+        relations: {
+          product: true,
+          recipe: true,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

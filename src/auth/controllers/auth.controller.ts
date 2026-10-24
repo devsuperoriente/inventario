@@ -42,7 +42,7 @@ export class AuthController {
     this.setAccessCookie(response, session.access_token);
 
     return {
-      user: session.user,          // <-- ¡Ahora sí existe y se envía al frontend!
+      user: session.user, // <-- ¡Ahora sí existe y se envía al frontend!
       permissions: session.permissions,
     };
   }

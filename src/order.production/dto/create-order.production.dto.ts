@@ -3,17 +3,26 @@ import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-valida
 
 export class CreateOrderProductionDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   numberOrder: string;
 
   @Type(() => Date)
   @IsDate()
   date: Date;
 
+  @IsNumber()
+  @IsOptional()
+  quantitySheduled?: number;
+
+  @IsNumber()
+  @IsOptional()
+  quantityProduced?: number;
+
   @IsString()
   @IsOptional()
   observation: string;
 
+  @Type(() => Number)
   @IsNumber()
   stateId: number;
 

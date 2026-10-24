@@ -1,8 +1,9 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateRecipeDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   code: string;
 
   @IsString()
@@ -20,4 +21,14 @@ export class CreateRecipeDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  baseYield: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  productId: number;
 }

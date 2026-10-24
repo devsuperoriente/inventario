@@ -1,27 +1,47 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { RecipeService } from './recipe.service.js';
 import { Recipe } from '../entities/recipe.entity.js';
+import { Product } from '../../products/entities/product.entity.js';
 
 describe('RecipeService', () => {
   let service: RecipeService;
   let repository: {
+    manager: { transaction: ReturnType<typeof vi.fn> };
+    create: ReturnType<typeof vi.fn>;
     find: ReturnType<typeof vi.fn>;
     findOne: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
     merge: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
   };
+  let productsRepository: {
+    findOne: ReturnType<typeof vi.fn>;
+    findOneBy: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
     repository = {
+      manager: { transaction: vi.fn() },
+      create: vi.fn(),
       find: vi.fn(),
       findOne: vi.fn(),
       save: vi.fn(),
       merge: vi.fn(),
       remove: vi.fn(),
     };
+    productsRepository = {
+      findOne: vi.fn(),
+      findOneBy: vi.fn(),
+      save: vi.fn(),
+    };
+    repository.manager.transaction.mockImplementation((callback) =>
+      callback({
+        getRepository: (entity: typeof Recipe | typeof Product) => (entity === Recipe ? repository : productsRepository),
+      }),
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [RecipeService, { provide: getRepositoryToken(Recipe), useValue: repository }],
@@ -39,15 +59,43 @@ describe('RecipeService', () => {
     repository.find.mockResolvedValue(recipes);
 
     await expect(service.findAll()).resolves.toBe(recipes);
-    expect(repository.find).toHaveBeenCalledWith();
+    expect(repository.find).toHaveBeenCalledWith({ relations: { product: true } });
   });
 
   it('creates a recipe', async () => {
-    const recipe = { codigo: 'R-1', name: 'Receta', description: 'Descripción', version: '1' };
-    repository.save.mockResolvedValue({ id: 1, ...recipe });
+    const recipe = { name: 'Receta', description: 'Descripción', version: '1', productId: 3 };
+    const product = { id: 3, category: { id: 2, name: 'Producto Final' }, recipe: null };
+    const entity = {
+      name: 'Receta',
+      description: 'Descripción',
+      version: '1',
+      product,
+    };
+    const savedRecipe = { id: 1, ...entity, code: 'R-000001' };
+    repository.create.mockReturnValue(entity);
+    repository.save.mockResolvedValueOnce({ id: 1, ...entity }).mockResolvedValueOnce(savedRecipe);
+    repository.findOne.mockResolvedValue(savedRecipe);
+    productsRepository.findOne.mockResolvedValue(product);
 
-    await expect(service.create(recipe)).resolves.toEqual({ id: 1, ...recipe });
-    expect(repository.save).toHaveBeenCalledWith(recipe);
+    await expect(service.create(recipe)).resolves.toEqual(savedRecipe);
+    expect(repository.create).toHaveBeenCalledWith(entity);
+    expect(repository.save).toHaveBeenNthCalledWith(1, entity);
+    expect(repository.create).toHaveBeenCalledWith({
+      name: 'Receta',
+      description: 'Descripción',
+      version: '1',
+      product,
+    });
+  });
+
+  it('rejects creating a recipe for a product outside category 2', async () => {
+    productsRepository.findOne.mockResolvedValue({
+      id: 3,
+      category: { id: 1, name: 'Producto Final' },
+      recipe: null,
+    });
+
+    await expect(service.create({ name: 'Receta', description: '', version: '1', baseYield: 1, productId: 3 })).rejects.toThrow(BadRequestException);
   });
 
   it('finds a recipe by id and throws when it does not exist', async () => {
@@ -56,13 +104,16 @@ describe('RecipeService', () => {
 
     await expect(service.findOne(1)).resolves.toBe(recipe);
     await expect(service.findOne(2)).rejects.toThrow(NotFoundException);
-    expect(repository.findOne).toHaveBeenNthCalledWith(1, { where: { id: 1 } });
+    expect(repository.findOne).toHaveBeenNthCalledWith(1, {
+      where: { id: 1 },
+      relations: { product: true },
+    });
   });
 
   it('updates a recipe', async () => {
     const recipe = { id: 1, codigo: 'R-1', name: 'Receta' } as Recipe;
     const updatedRecipe = { id: 1, codigo: 'R-1', name: 'Receta actualizada' };
-    repository.findOne.mockResolvedValue(recipe);
+    repository.findOne.mockResolvedValueOnce(recipe).mockResolvedValueOnce(updatedRecipe);
     repository.merge.mockReturnValue(updatedRecipe);
     repository.save.mockResolvedValue(updatedRecipe);
 
@@ -75,7 +126,10 @@ describe('RecipeService', () => {
     const recipe = { id: 1, codigo: 'R-1', name: 'Receta' } as Recipe;
     repository.findOne.mockResolvedValue(recipe);
 
-    await expect(service.remove(1)).resolves.toBeUndefined();
+    await expect(service.remove(1)).resolves.toEqual({
+      success: true,
+      message: 'Receta eliminada correctamente',
+    });
     expect(repository.remove).toHaveBeenCalledWith(recipe);
   });
 });

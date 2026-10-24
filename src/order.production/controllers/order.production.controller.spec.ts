@@ -4,8 +4,10 @@ import { OrderProductionService } from '../services/order.production.service.js'
 
 describe('OrderProductionController', () => {
   let controller: OrderProductionController;
+  const consumeRequiredMaterials = vi.fn();
 
   beforeEach(async () => {
+    vi.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrderProductionController],
       providers: [
@@ -17,6 +19,7 @@ describe('OrderProductionController', () => {
             findOne: vi.fn(),
             update: vi.fn(),
             remove: vi.fn(),
+            consumeRequiredMaterials,
           },
         },
       ],
@@ -27,5 +30,11 @@ describe('OrderProductionController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('registers material consumption for a production order', async () => {
+    await controller.consumeRequiredMaterials(7);
+
+    expect(consumeRequiredMaterials).toHaveBeenCalledWith(7);
   });
 });

@@ -1,8 +1,9 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import type { Relation } from 'typeorm';
 import { Category } from './category.entity.js';
 import { UnitsMeasurement } from './units.measurement.entity.js';
 import { DetailsRecipe } from '../../recipe/entities/details.recipe.entity.js';
+import { Recipe } from '../../recipe/entities/recipe.entity.js';
 import { DetailsOrder } from '../../order/entities/details.order.entity.js';
 import { OrderProduction } from '../../order.production/entities/order.production.entity.js';
 import { Batch } from '../../batchs/entities/batch.entity.js';
@@ -46,6 +47,9 @@ export class Product {
 
   @OneToMany(() => DetailsRecipe, (detail) => detail.product)
   detailsRecipe: DetailsRecipe[];
+
+  @OneToOne(() => Recipe, (recipe) => recipe.product, { nullable: true })
+  recipe: Relation<Recipe>;
 
   @OneToMany(() => DetailsOrder, (orderDetail) => orderDetail.product)
   detailsOrder: Relation<DetailsOrder>[];

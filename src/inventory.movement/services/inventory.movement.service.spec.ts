@@ -78,6 +78,30 @@ describe('InventoryMovementService', () => {
     });
   });
 
+  it('creates an inventory movement without a production order', async () => {
+    const date = new Date('2026-10-15T10:00:00.000Z');
+    const movement = { id: 2, quantity: 10, date, observation: 'Entrada inicial de lote' };
+    repository.save.mockResolvedValue({ id: 2 });
+    repository.findOne.mockResolvedValue(movement);
+
+    await expect(
+      service.create({
+        quantity: 10,
+        date,
+        observation: 'Entrada inicial de lote',
+        batchId: 2,
+        typeMovementId: 1,
+      }),
+    ).resolves.toBe(movement);
+    expect(repository.save).toHaveBeenCalledWith({
+      quantity: 10,
+      date,
+      observation: 'Entrada inicial de lote',
+      batch: { id: 2 },
+      typeMovement: { id: 1 },
+    });
+  });
+
   it('finds an inventory movement by id and throws when it does not exist', async () => {
     const movement = { id: 1, observation: 'Entrada de lote' };
     repository.findOne.mockResolvedValueOnce(movement).mockResolvedValueOnce(null);

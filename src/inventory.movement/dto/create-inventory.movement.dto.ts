@@ -31,7 +31,8 @@ export class CreateInventoryMovementDto {
 
   @Type(() => Number)
   @IsNumber()
-  orderProductionId: number;
+  @IsOptional()
+  orderProductionId?: number | null;
 
   @Type(() => Number)
   @IsNumber()

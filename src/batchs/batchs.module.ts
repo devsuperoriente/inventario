@@ -7,9 +7,11 @@ import { Provider } from '../providers/entities/provider.entity.js';
 import { ProvidersController } from '../providers/controllers/providers.controller.js';
 import { ProvidersService } from '../providers/services/providers.service.js';
 import { RolesModule } from '../roles/roles.module.js';
+import { InventoryMovement } from '../inventory.movement/entities/inventory.movement.entity.js';
+import { TypeMovement } from '../inventory.movement/entities/type.movement.entity.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Batch, Provider]), RolesModule],
+  imports: [TypeOrmModule.forFeature([Batch, Provider, InventoryMovement, TypeMovement]), RolesModule],
   controllers: [BatchsController, ProvidersController],
   providers: [BatchsService, ProvidersService],
   exports: [BatchsService, ProvidersService],

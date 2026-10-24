@@ -35,7 +35,7 @@ export class InventoryMovementService {
       const inventoryMovement = await this.inventoryMovementsRepository.save({
         ...movementFields,
         batch: { id: batchId },
-        ordersProduction: { id: orderProductionId },
+        ...(orderProductionId != null ? { ordersProduction: { id: orderProductionId } } : {}),
         typeMovement: { id: typeMovementId },
       });
       return await this.findOne(inventoryMovement.id);
@@ -54,7 +54,7 @@ export class InventoryMovementService {
       const updatedInventoryMovement = this.inventoryMovementsRepository.merge(inventoryMovement, {
         ...movementFields,
         ...(batchId !== undefined ? { batch: { id: batchId } } : {}),
-        ...(orderProductionId !== undefined ? { ordersProduction: { id: orderProductionId } } : {}),
+        ...(orderProductionId !== undefined ? { ordersProduction: orderProductionId === null ? null : { id: orderProductionId } } : {}),
         ...(typeMovementId !== undefined ? { typeMovement: { id: typeMovementId } } : {}),
       });
       await this.inventoryMovementsRepository.save(updatedInventoryMovement);
