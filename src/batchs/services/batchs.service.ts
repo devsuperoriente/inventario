@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBatchDto } from '../dto/create-batch.dto.js';
@@ -11,6 +11,8 @@ import { TypeMovement } from '../../inventory.movement/entities/type.movement.en
 
 @Injectable()
 export class BatchsService {
+  private readonly logger = new Logger(BatchsService.name);
+
   constructor(
     @InjectRepository(Batch)
     private readonly batchsRepository: Repository<Batch>,
@@ -19,7 +21,10 @@ export class BatchsService {
   findAll() {
     return this.batchsRepository.find({
       relations: {
-        product: true,
+        product: {
+          unitsMeasurement: true,
+          category: true,
+        },
         provider: true,
       },
     });
@@ -34,11 +39,12 @@ export class BatchsService {
     }>();
 
     return {
-      existencias: rows.map((row) => ({
-        productoId: Number(row.productoId),
-        producto: row.producto,
-        unidad: row.unidad,
-        cantidadDisponible: row.cantidadDisponible,
+      stock: rows.map((row) => ({
+        productId: Number(row.productoId),
+        product: row.producto,
+        unitMeasurement: row.unidad,
+        // Convertir explícitamente el SUM() a número flotante/decimal
+        quantityStock: Number(row.cantidadDisponible) || 0,
       })),
     };
   }
@@ -56,16 +62,16 @@ export class BatchsService {
 
     const product = batches[0]?.product;
     return {
-      productoId: productId,
-      producto: product?.name ?? null,
-      unidad: product?.unitsMeasurement.abbreviation ?? null,
-      lotes: batches.map((batch) => ({
+      productId: productId,
+      product: product?.name ?? null,
+      unit: product?.unitsMeasurement.abbreviation ?? null,
+      batches: batches.map((batch) => ({
         id: batch.id,
-        codigo: batch.code,
-        proveedor: batch.provider.name,
+        code: batch.code,
+        provider: batch.provider.name,
         fechaIngreso: batch.entryDate,
         fechaVencimiento: batch.expirationDate,
-        cantidadInicial: batch.quantityInitial,
+        quantityInitial: batch.quantityInitial,
         cantidadDisponible: batch.quantityAvailable,
       })),
     };
@@ -193,6 +199,7 @@ export class BatchsService {
 
   async remove(id: number) {
     const batch = await this.findOne(id);
+
     try {
       await this.batchsRepository.remove(batch);
 
@@ -201,10 +208,16 @@ export class BatchsService {
         message: 'Lote eliminado correctamente',
       };
     } catch (error) {
-      if (error instanceof Error) {
-        throw new UnprocessableEntityException(error.message);
+      // 1. Le decimos a TypeScript la estructura que esperamos del error de la BD
+      const dbError = error as { code?: string; message: string; stack?: string };
+
+      // 2. Ahora sí podemos leer dbError.code sin que TS se queje
+      if (dbError.code === '23503') {
+        throw new ConflictException('No se puede eliminar el lote porque tiene registros asociados');
       }
-      throw new UnprocessableEntityException('Error al eliminar el lote');
+
+      this.logger.error(`Error al eliminar el lote ${id}: ${dbError.message}`, dbError.stack);
+      throw new InternalServerErrorException('Ocurrió un error inesperado al eliminar el lote');
     }
   }
 }

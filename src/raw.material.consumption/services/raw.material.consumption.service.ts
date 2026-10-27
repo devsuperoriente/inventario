@@ -26,4 +26,21 @@ export class RawMaterialConsumptionService {
     }
     return consumption;
   }
+
+  async getMaterialConsumptionByOrderProduction(ordersProductionId: number) {
+    const consumption = await this.rawMaterialConsumptionsRepository.find({
+      where: {
+        ordersProduction: { id: ordersProductionId }, // Filtrar por el ID dentro de la relación
+      },
+      relations: {
+        batch: true,
+      },
+    });
+
+    if (!consumption) {
+      throw new NotFoundException(`No se encontró ningún consumo para la orden de producción con ID ${ordersProductionId}`);
+    }
+
+    return consumption;
+  }
 }

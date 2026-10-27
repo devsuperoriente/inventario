@@ -9,9 +9,10 @@ import { ProvidersService } from '../providers/services/providers.service.js';
 import { RolesModule } from '../roles/roles.module.js';
 import { InventoryMovement } from '../inventory.movement/entities/inventory.movement.entity.js';
 import { TypeMovement } from '../inventory.movement/entities/type.movement.entity.js';
+import { SiesaModule } from '../siesa/siesa.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Batch, Provider, InventoryMovement, TypeMovement]), RolesModule],
+  imports: [TypeOrmModule.forFeature([Batch, Provider, InventoryMovement, TypeMovement]), SiesaModule, RolesModule],
   controllers: [BatchsController, ProvidersController],
   providers: [BatchsService, ProvidersService],
   exports: [BatchsService, ProvidersService],

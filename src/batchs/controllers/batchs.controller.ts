@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { BatchsService } from '../services/batchs.service.js';
 import { CreateBatchDto } from '../dto/create-batch.dto.js';
 import { UpdateBatchDto } from '../dto/update-batch.dto.js';
@@ -7,8 +7,8 @@ import { RequirePermissions } from '../../roles/decorators/require-permissions.d
 import { RolesGuard } from '../../roles/guards/roles.guard.js';
 
 @Controller('lotes')
-//@UseGuards(JwtAuthGuard, RolesGuard)
-//@RequirePermissions('batches:manage')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@RequirePermissions('batches:manage')
 export class BatchsController {
   constructor(private readonly batchsService: BatchsService) {}
 

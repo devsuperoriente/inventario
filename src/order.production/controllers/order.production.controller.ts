@@ -7,13 +7,13 @@ import { Payload } from '../../auth/models/payload.js';
 import { RequirePermissions } from '../../roles/decorators/require-permissions.decorator.js';
 import { RolesGuard } from '../../roles/guards/roles.guard.js';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordenes-produccion')
 export class OrderProductionController {
   constructor(private readonly orderProductionService: OrderProductionService) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RequirePermissions('production-orders:create')
   @Post()
+  @RequirePermissions('production-orders:create')
   create(@Body() createOrderProductionDto: CreateOrderProductionDto, @Request() req: any) {
     const payload = req.user as Payload;
     const userId = payload.sub;
@@ -21,37 +21,37 @@ export class OrderProductionController {
   }
 
   @Get()
+  @RequirePermissions('production-orders:read')
   findAll() {
     return this.orderProductionService.findAll();
   }
 
   @Get(':id/insumos-requeridos')
-  //@UseGuards(JwtAuthGuard, RolesGuard)
-  //  @RequirePermissions('production-orders:read')
+  @RequirePermissions('production-orders:read')
   findRequiredMaterials(@Param('id', ParseIntPipe) id: number) {
     return this.orderProductionService.findRequiredMaterials(id);
   }
 
   @Post(':id/consumos-materia-prima')
-  //@UseGuards(JwtAuthGuard, RolesGuard)
-  //@RequirePermissions('production-orders:consume')
+  @RequirePermissions('production-orders:consume')
   consumeRequiredMaterials(@Param('id', ParseIntPipe) id: number) {
     return this.orderProductionService.consumeRequiredMaterials(id);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @RequirePermissions('production-orders:read')
   findOne(@Param('id') id: string) {
     return this.orderProductionService.findOne(+id);
   }
 
   @Put(':id')
+  @RequirePermissions('production-orders:update')
   update(@Param('id') id: string, @Body() updateOrderProductionDto: UpdateOrderProductionDto) {
     return this.orderProductionService.update(+id, updateOrderProductionDto);
   }
 
   @Delete(':id')
+  @RequirePermissions('production-orders:delete')
   remove(@Param('id') id: string) {
     return this.orderProductionService.remove(+id);
   }

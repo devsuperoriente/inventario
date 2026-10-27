@@ -1,7 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { RawMaterialConsumptionService } from '../services/raw.material.consumption.service.js';
 
-@Controller('raw.material.consumption')
+@Controller('materia-prima')
 export class RawMaterialConsumptionController {
   constructor(private readonly rawMaterialConsumptionService: RawMaterialConsumptionService) {}
 
@@ -13,5 +13,10 @@ export class RawMaterialConsumptionController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.rawMaterialConsumptionService.findOne(id);
+  }
+
+  @Get('/ordenes-produccion/:id')
+  getMaterialConsumptionByOrderProduction(@Param('id', ParseIntPipe) id: number) {
+    return this.rawMaterialConsumptionService.getMaterialConsumptionByOrderProduction(id);
   }
 }

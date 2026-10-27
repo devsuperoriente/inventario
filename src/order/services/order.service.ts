@@ -20,6 +20,26 @@ export class OrderService {
     });
   }
 
+  async findAllByToday(): Promise<Order[]> {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return this.ordersRepository.find({
+      where: {
+        createdAt: Between(startOfDay, endOfDay),
+      },
+      relations: {
+        client: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   async findOne(id: number) {
     const order = await this.ordersRepository.findOne({
       where: { id },
@@ -50,7 +70,7 @@ export class OrderService {
       });
 
       // Generar consecutivo
-      order.numberOrder = `OP-${order.id.toString().padStart(6, '0')}`;
+      order.numberOrder = `P-${order.id.toString().padStart(6, '0')}`;
 
       // Guardar nuevamente
       await this.ordersRepository.save(order);
@@ -66,10 +86,26 @@ export class OrderService {
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
-    const order = await this.findOne(id);
     try {
-      const updatedOrder = this.ordersRepository.merge(order, updateOrderDto);
-      return await this.ordersRepository.save(updatedOrder);
+      const order = await this.findOne(id);
+
+      const { clientId, ...orderData } = updateOrderDto;
+
+      const updatedOrder = this.ordersRepository.merge(order, orderData);
+
+      if (clientId !== undefined) {
+        updatedOrder.client = { id: clientId } as any;
+      }
+
+      await this.ordersRepository.save(updatedOrder);
+
+      // Retornar el producto actualizado con sus relaciones
+      return await this.ordersRepository.findOne({
+        where: { id },
+        relations: {
+          client: true,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
         throw new UnprocessableEntityException(error.message);

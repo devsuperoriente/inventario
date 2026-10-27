@@ -17,7 +17,7 @@ export class Recipe {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string;
 
-  @Column({ type: 'varchar', length: 30, unique: true })
+  @Column({ type: 'varchar', length: 30 })
   version: string;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })
