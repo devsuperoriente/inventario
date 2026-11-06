@@ -31,6 +31,9 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'stock_min' })
   stockMin: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'quantity_in_grams' })
+  quantityInGrams: number;
+
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
@@ -46,7 +49,7 @@ export class Product {
   unitsMeasurement: Relation<UnitsMeasurement>;
 
   @OneToMany(() => DetailsRecipe, (detail) => detail.product)
-  detailsRecipe: DetailsRecipe[];
+  detailsRecipe: Relation<DetailsRecipe>[];
 
   @OneToOne(() => Recipe, (recipe) => recipe.product, { nullable: true })
   recipe: Relation<Recipe>;
@@ -55,8 +58,8 @@ export class Product {
   detailsOrder: Relation<DetailsOrder>[];
 
   @OneToMany(() => OrderProduction, (orderProduction) => orderProduction.product)
-  ordersProduction: OrderProduction[];
+  ordersProduction: Relation<OrderProduction>[];
 
   @OneToMany(() => Batch, (batch) => batch.product)
-  batchs: Batch[];
+  batchs: Relation<Batch>[];
 }

@@ -13,8 +13,8 @@ const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
     @InjectRepository(RefreshToken)
     private readonly refreshTokensRepository: Repository<RefreshToken>,
     private readonly dataSource: DataSource,

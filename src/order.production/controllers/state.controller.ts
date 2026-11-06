@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { StateService } from '../services/state.service.js';
 import { CreateStateDto } from '../dto/create-state.dto.js';
 import { UpdateStateDto } from '../dto/update-state.dto.js';

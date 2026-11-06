@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { InventoryMovementService } from '../services/inventory.movement.service.js';
 import { CreateInventoryMovementDto } from '../dto/create-inventory.movement.dto.js';
 import { UpdateInventoryMovementDto } from '../dto/update-inventory.movement.dto.js';

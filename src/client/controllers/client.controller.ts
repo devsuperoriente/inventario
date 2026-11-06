@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
 import { CreateClientDto } from '../dto/create-client.dto.js';
 import { UpdateClientDto } from '../dto/update-client.dto.js';
 import { ClientService } from '../services/client.service.js';

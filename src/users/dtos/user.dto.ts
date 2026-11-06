@@ -1,8 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateProfileDto, UpdateProfileDto } from './profile.dto.js';
-import { OmitType, PartialType } from '@nestjs/swagger';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @IsString()

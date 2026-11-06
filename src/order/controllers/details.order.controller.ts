@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { DetailsOrderService } from '../services/details.order.service.js';
 import { CreateDetailsOrderDto } from '../dto/create-details.order.dto.js';
 import { UpdateDetailsOrderDto } from '../dto/update-details.order.dto.js';

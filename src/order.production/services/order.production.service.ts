@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { EntityManager } from 'typeorm';
 import { CreateOrderProductionDto } from '../dto/create-order.production.dto.js';
 import { UpdateOrderProductionDto } from '../dto/update-order.production.dto.js';
 import { OrderProduction } from '../entities/order.production.entity.js';
@@ -10,7 +11,6 @@ import { Batch } from '../../batchs/entities/batch.entity.js';
 import { RawMaterialConsumption } from '../../raw.material.consumption/entities/raw.material.consumption.entity.js';
 import { InventoryMovement } from '../../inventory.movement/entities/inventory.movement.entity.js';
 import { TypeMovement } from '../../inventory.movement/entities/type.movement.entity.js';
-import { State } from '../entities/state.entity.js';
 
 export interface RequiredMaterial {
   id: number;
@@ -22,6 +22,27 @@ export interface RequiredMaterial {
   };
   cantidadRequerida: string;
 }
+
+type PlannedConsumption = {
+  material: RequiredMaterial;
+  batch: Batch;
+  quantity: bigint;
+  previousBalance: bigint;
+};
+
+type MaterialConsumptionResult = {
+  productoId: number;
+  producto: string;
+  unidad: string;
+  cantidadRequerida: string;
+  lotes: {
+    loteId: number;
+    codigoLote: string;
+    cantidadConsumida: string;
+    saldoAnterior: string;
+    saldoActual: string;
+  }[];
+};
 
 @Injectable()
 export class OrderProductionService {
@@ -70,170 +91,172 @@ export class OrderProductionService {
   }
 
   async consumeRequiredMaterials(id: number) {
-    return this.orderProductionsRepository.manager.transaction(async (manager) => {
-      const ordersRepository = manager.getRepository(OrderProduction);
-      const stateRepository = manager.getRepository(State);
-      const consumptionsRepository = manager.getRepository(RawMaterialConsumption);
-      const batchRepository = manager.getRepository(Batch);
-      const inventoryMovementsRepository = manager.getRepository(InventoryMovement);
+    return this.orderProductionsRepository.manager.transaction((manager) => this.consumeMaterialsInTransaction(id, manager));
+  }
 
-      // MEJORA 1: Bloqueo y carga de relaciones en una sola consulta
-      const orderProduction = await ordersRepository.findOne({
-        where: { id },
-        lock: { mode: 'pessimistic_write' },
-        relations: { state: true, product: { category: true } },
-      });
+  private async consumeMaterialsInTransaction(id: number, manager: EntityManager) {
+    const orderProduction = await this.getOrderForMaterialConsumption(id, manager);
+    await this.ensureOrderHasNoConsumption(id, manager);
 
-      if (!orderProduction) {
-        throw new NotFoundException(`Production order with ID ${id} not found`);
-      }
+    const { recipe, materials } = await this.calculateRequiredMaterials(orderProduction, manager.getRepository(Recipe));
+    const exitType = await this.getExitMovementType(manager);
+    const plannedConsumptions = await this.planMaterialConsumptions(materials, manager.getRepository(Batch));
+    const consumptionResults = await this.persistMaterialConsumptions(id, orderProduction, exitType, plannedConsumptions, manager);
 
-      // Opcional/Recomendado: Validar que la orden esté en un estado válido para consumir
-      // if (orderProduction.state.name !== 'ESTADO_ESPERADO') throw new ConflictException(...);
+    return {
+      orden: { id, numberOrder: orderProduction.numberOrder },
+      receta: { id: recipe.id, code: recipe.code, name: recipe.name },
+      consumos: consumptionResults,
+    };
+  }
 
-      const existingConsumptions = await consumptionsRepository.count({
-        where: { ordersProduction: { id } },
-      });
-      if (existingConsumptions > 0) {
-        throw new ConflictException(`La orden ${id} ya tiene consumos de materia prima registrados`);
-      }
-
-      const dosificacionState = await stateRepository.findOne({
-        where: { name: 'EN DOSIFICACION', isActive: true },
-      });
-      if (!dosificacionState) {
-        throw new UnprocessableEntityException('No se encontró el estado "EN DOSIFICACION".');
-      }
-
-      // Actualizamos el estado pero podemos diferir el guardado para el final, o hacerlo aquí.
-      orderProduction.state = dosificacionState;
-      await ordersRepository.save(orderProduction);
-
-      const { recipe, materials } = await this.calculateRequiredMaterials(orderProduction, manager.getRepository(Recipe));
-
-      const exitType = await manager.getRepository(TypeMovement).findOne({
-        where: { name: 'SALIDA', isActive: true },
-      });
-      if (!exitType) {
-        throw new UnprocessableEntityException('No está configurado un tipo de movimiento activo llamado SALIDA');
-      }
-
-      const materialTotals = new Map<number, RequiredMaterial>();
-      for (const material of materials) {
-        const existing = materialTotals.get(material.id);
-        materialTotals.set(
-          material.id,
-          existing
-            ? {
-                ...existing,
-                cantidadRequerida: addDecimalStrings(existing.cantidadRequerida, material.cantidadRequerida),
-              }
-            : material,
-        );
-      }
-
-      const consumptionDate = new Date();
-      const plannedConsumptions = [];
-
-      // Validar y planificar (Se mantiene igual, excelente lógica de bloqueos por ID y validación)
-      for (const material of [...materialTotals.values()].sort((left, right) => left.id - right.id)) {
-        const requiredQuantityText = roundDecimalToScale(material.cantidadRequerida, 2);
-        const requiredQuantity = parsePositiveModelDecimal(requiredQuantityText, `La cantidad requerida...`);
-        const requiredCents = decimalToScaledInteger(requiredQuantity, 2);
-
-        const batches = await batchRepository.createQueryBuilder('batch').where('batch.product_id = :productId', { productId: material.id }).andWhere('batch.quantityAvailable > 0').andWhere('batch.expirationDate >= CURRENT_DATE').orderBy('batch.expirationDate', 'ASC').addOrderBy('batch.entryDate', 'ASC').addOrderBy('batch.id', 'ASC').setLock('pessimistic_write').getMany();
-
-        let availableCents = 0n;
-        const eligibleBatches = batches.map((batch) => {
-          const available = parsePositiveModelDecimal(batch.quantityAvailable, `El saldo del lote ${batch.code}`);
-          const balance = decimalToScaledInteger(available, 2);
-          availableCents += balance;
-          return { batch, balance };
-        });
-
-        if (availableCents < requiredCents) {
-          throw new UnprocessableEntityException(`Inventario insuficiente de ${material.nombre}: se requieren ${requiredQuantityText} ${material.unidadMedida.abreviatura} y hay ${scaledIntegerToDecimal(availableCents, 2)} disponibles en lotes vigentes`);
-        }
-
-        let remainingCents = requiredCents;
-        for (const { batch, balance } of eligibleBatches) {
-          if (remainingCents === 0n) break;
-          const quantity = balance < remainingCents ? balance : remainingCents;
-          plannedConsumptions.push({ material, batch, quantity, previousBalance: balance });
-          remainingCents -= quantity;
-        }
-      }
-
-      // MEJORA 2: Preparar arreglos para inserciones masivas en BD
-      const consumptionsByMaterial = new Map<number, any>();
-      const batchesToUpdate = [];
-      const consumptionsToInsert = [];
-      const movementsToInsert = [];
-
-      for (const planned of plannedConsumptions) {
-        const { batch, material, quantity, previousBalance } = planned;
-        const quantityText = scaledIntegerToDecimal(quantity, 2);
-        const currentBalance = previousBalance - quantity;
-
-        // Acumular Lotes
-        batch.quantityAvailable = scaledIntegerToDecimal(currentBalance, 2);
-        batchesToUpdate.push(batch);
-
-        // Acumular Consumos
-        consumptionsToInsert.push(
-          consumptionsRepository.create({
-            quantity: quantityText,
-            date: consumptionDate,
-            observation: `Consumo de ${material.nombre} para la orden ${orderProduction.numberOrder ?? id}`,
-            batch: { id: batch.id },
-            ordersProduction: { id },
-          }),
-        );
-
-        // Acumular Movimientos
-        movementsToInsert.push(
-          inventoryMovementsRepository.create({
-            quantity: quantityText,
-            balancePrevius: scaledIntegerToDecimal(previousBalance, 2),
-            balanceCurrent: scaledIntegerToDecimal(currentBalance, 2),
-            date: consumptionDate,
-            observation: `Salida de ${material.nombre} para la orden ${orderProduction.numberOrder ?? id}`,
-            batch: { id: batch.id },
-            ordersProduction: { id },
-            typeMovement: { id: exitType.id },
-          }),
-        );
-
-        // Construir respuesta
-        const materialConsumption = consumptionsByMaterial.get(material.id) ?? {
-          productoId: material.id,
-          producto: material.nombre,
-          unidad: material.unidadMedida.abreviatura,
-          cantidadRequerida: roundDecimalToScale(material.cantidadRequerida, 2),
-          lotes: [],
-        };
-
-        materialConsumption.lotes.push({
-          loteId: batch.id,
-          codigoLote: batch.code ?? String(batch.id),
-          cantidadConsumida: quantityText,
-          saldoAnterior: scaledIntegerToDecimal(previousBalance, 2),
-          saldoActual: scaledIntegerToDecimal(currentBalance, 2),
-        });
-        consumptionsByMaterial.set(material.id, materialConsumption);
-      }
-
-      // MEJORA 2 (Ejecución): Guardar todo en bloque fuera del for
-      if (batchesToUpdate.length > 0) await batchRepository.save(batchesToUpdate);
-      if (consumptionsToInsert.length > 0) await consumptionsRepository.save(consumptionsToInsert);
-      if (movementsToInsert.length > 0) await inventoryMovementsRepository.save(movementsToInsert);
-
-      return {
-        orden: { id, numberOrder: orderProduction.numberOrder, estado: orderProduction.state.name },
-        receta: { id: recipe.id, code: recipe.code, name: recipe.name },
-        consumos: [...consumptionsByMaterial.values()],
-      };
+  private async getOrderForMaterialConsumption(id: number, manager: EntityManager): Promise<OrderProduction> {
+    const orderProduction = await manager.getRepository(OrderProduction).findOne({
+      where: { id },
+      lock: { mode: 'pessimistic_write' },
+      relations: { state: true, product: { category: true } },
     });
+
+    if (!orderProduction) {
+      throw new NotFoundException(`Production order with ID ${id} not found`);
+    }
+
+    if (orderProduction.state.name !== 'EN DOSIFICACION') {
+      throw new UnprocessableEntityException(`Solo se pueden consumir materiales para órdenes EN DOSIFICACION`);
+    }
+
+    return orderProduction;
+  }
+
+  private async ensureOrderHasNoConsumption(id: number, manager: EntityManager): Promise<void> {
+    const existingConsumptions = await manager.getRepository(RawMaterialConsumption).count({
+      where: { ordersProduction: { id } },
+    });
+
+    if (existingConsumptions > 0) {
+      throw new ConflictException(`La orden ${id} ya tiene consumos de materia prima registrados`);
+    }
+  }
+
+  private async getExitMovementType(manager: EntityManager): Promise<TypeMovement> {
+    const exitType = await manager.getRepository(TypeMovement).findOne({
+      where: { name: 'SALIDA', isActive: true },
+    });
+
+    if (!exitType) {
+      throw new UnprocessableEntityException('No está configurado un tipo de movimiento activo llamado SALIDA');
+    }
+
+    return exitType;
+  }
+
+  private aggregateRequiredMaterials(materials: RequiredMaterial[]): RequiredMaterial[] {
+    const totals = new Map<number, RequiredMaterial>();
+    for (const material of materials) {
+      const current = totals.get(material.id);
+      totals.set(material.id, current ? { ...current, cantidadRequerida: addDecimalStrings(current.cantidadRequerida, material.cantidadRequerida) } : material);
+    }
+    return [...totals.values()].sort((left, right) => left.id - right.id);
+  }
+
+  private async planMaterialConsumptions(materials: RequiredMaterial[], batchRepository: Repository<Batch>): Promise<PlannedConsumption[]> {
+    const plannedConsumptions: PlannedConsumption[] = [];
+
+    for (const material of this.aggregateRequiredMaterials(materials)) {
+      const requiredQuantityText = roundDecimalToScale(material.cantidadRequerida, 2);
+      const requiredQuantity = parsePositiveModelDecimal(requiredQuantityText, `La cantidad requerida de ${material.nombre}`);
+      const requiredCents = decimalToScaledInteger(requiredQuantity, 2);
+      const batches = await batchRepository.createQueryBuilder('batch').where('batch.product_id = :productId', { productId: material.id }).andWhere('batch.quantityAvailable > 0').andWhere('batch.expirationDate >= CURRENT_DATE').orderBy('batch.expirationDate', 'ASC').addOrderBy('batch.entryDate', 'ASC').addOrderBy('batch.id', 'ASC').setLock('pessimistic_write').getMany();
+
+      let availableCents = 0n;
+      const eligibleBatches = batches.map((batch) => {
+        const available = parsePositiveModelDecimal(batch.quantityAvailable, `El saldo del lote ${batch.code}`);
+        const balance = decimalToScaledInteger(available, 2);
+        availableCents += balance;
+        return { batch, balance };
+      });
+
+      if (availableCents < requiredCents) {
+        throw new UnprocessableEntityException(`Inventario insuficiente de ${material.nombre}: se requieren ${requiredQuantityText} ${material.unidadMedida.abreviatura} y hay ${scaledIntegerToDecimal(availableCents, 2)} disponibles en lotes vigentes`);
+      }
+
+      let remainingCents = requiredCents;
+      for (const { batch, balance } of eligibleBatches) {
+        if (remainingCents === 0n) break;
+        const quantity = balance < remainingCents ? balance : remainingCents;
+        plannedConsumptions.push({ material, batch, quantity, previousBalance: balance });
+        remainingCents -= quantity;
+      }
+    }
+
+    return plannedConsumptions;
+  }
+
+  private async persistMaterialConsumptions(id: number, orderProduction: OrderProduction, exitType: TypeMovement, plannedConsumptions: PlannedConsumption[], manager: EntityManager): Promise<MaterialConsumptionResult[]> {
+    const batchRepository = manager.getRepository(Batch);
+    const consumptionsRepository = manager.getRepository(RawMaterialConsumption);
+    const inventoryMovementsRepository = manager.getRepository(InventoryMovement);
+    const consumptionDate = new Date();
+    const results = new Map<number, MaterialConsumptionResult>();
+    const batchesToUpdate: Batch[] = [];
+    const consumptionsToInsert: RawMaterialConsumption[] = [];
+    const movementsToInsert: InventoryMovement[] = [];
+
+    for (const { batch, material, quantity, previousBalance } of plannedConsumptions) {
+      const quantityText = scaledIntegerToDecimal(quantity, 2);
+      const currentBalance = previousBalance - quantity;
+      const currentBalanceText = scaledIntegerToDecimal(currentBalance, 2);
+      const previousBalanceText = scaledIntegerToDecimal(previousBalance, 2);
+      const orderNumber = orderProduction.numberOrder ?? id;
+
+      batch.quantityAvailable = currentBalanceText;
+      batchesToUpdate.push(batch);
+
+      consumptionsToInsert.push(
+        consumptionsRepository.create({
+          quantity: quantityText,
+          date: consumptionDate,
+          observation: `Consumo de ${material.nombre} para la orden ${orderNumber}`,
+          batch: { id: batch.id },
+          ordersProduction: { id },
+        }),
+      );
+
+      movementsToInsert.push(
+        inventoryMovementsRepository.create({
+          quantity: quantityText,
+          balancePrevius: previousBalanceText,
+          balanceCurrent: currentBalanceText,
+          date: consumptionDate,
+          observation: `Salida de ${material.nombre} para la orden ${orderNumber}`,
+          batch: { id: batch.id },
+          ordersProduction: { id },
+          typeMovement: { id: exitType.id },
+        }),
+      );
+
+      const materialConsumption = results.get(material.id) ?? {
+        productoId: material.id,
+        producto: material.nombre,
+        unidad: material.unidadMedida.abreviatura,
+        cantidadRequerida: roundDecimalToScale(material.cantidadRequerida, 2),
+        lotes: [],
+      };
+      materialConsumption.lotes.push({
+        loteId: batch.id,
+        codigoLote: batch.code ?? String(batch.id),
+        cantidadConsumida: quantityText,
+        saldoAnterior: previousBalanceText,
+        saldoActual: currentBalanceText,
+      });
+      results.set(material.id, materialConsumption);
+    }
+
+    if (batchesToUpdate.length > 0) await batchRepository.save(batchesToUpdate);
+    if (consumptionsToInsert.length > 0) await consumptionsRepository.save(consumptionsToInsert);
+    if (movementsToInsert.length > 0) await inventoryMovementsRepository.save(movementsToInsert);
+
+    return [...results.values()];
   }
 
   private async calculateRequiredMaterials(orderProduction: OrderProduction, recipesRepository: Repository<Recipe>): Promise<{ recipe: Recipe; materials: RequiredMaterial[] }> {
@@ -275,7 +298,7 @@ export class OrderProductionService {
     }
 
     const materials = recipe.detailsRecipe.map((detail) => {
-      if (!detail.product || !detail.product.unitsMeasurement) {
+      if (!detail.product?.unitsMeasurement) {
         throw new UnprocessableEntityException(`El detalle ${detail.id} de la receta ${recipe.id} no tiene un insumo o unidad de medida válida`);
       }
       let amount: ReturnType<typeof parsePositiveModelDecimal>;

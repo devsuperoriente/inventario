@@ -11,14 +11,10 @@ export class SiesaService {
   async registrarEntradaInventario(dto: CreateSiesaInventoryMovementDto): Promise<void> {
     const xmlPayload = this.buildXmlPayload(dto);
 
-    try {
-      const client = await soap.createClientAsync(this.wsdlUrl);
-      const [result] = await client.ImportarXMLAsync({ pvstrDatos: xmlPayload });
+    const client = await soap.createClientAsync(this.wsdlUrl);
+    const [result] = await client.ImportarXMLAsync({ pvstrDatos: xmlPayload });
 
-      this.validateSiesaResponse(result?.ImportarXMLResult);
-    } catch (error) {
-      throw new InternalServerErrorException('Fallo en la sincronización con Siesa ERP');
-    }
+    this.validateSiesaResponse(result?.ImportarXMLResult);
   }
 
   private buildXmlPayload(dto: CreateSiesaInventoryMovementDto): string {

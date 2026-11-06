@@ -120,12 +120,25 @@ export class BatchsService {
       return await this.batchsRepository.manager.transaction(async (manager) => {
         const repository = manager.getRepository(Batch);
         const inventoryMovementsRepository = manager.getRepository(InventoryMovement);
+        const product = await manager.getRepository(Product).findOne({
+          where: { id: productId },
+          select: {
+            id: true,
+            quantityInGrams: true,
+          },
+        });
         const typeMovementsRepository = manager.getRepository(TypeMovement);
+
+        if (!product) {
+          throw new NotFoundException(`Product with ID ${productId} not found`);
+        }
+
+        const quantityInGrams = quantityInitial * product.quantityInGrams;
 
         const batch = repository.create({
           ...fields,
-          quantityInitial,
-          quantityAvailable: quantityInitial,
+          quantityInitial : quantityInGrams,
+          quantityAvailable: quantityInGrams,
           entryDate: fields.entryDate ?? new Date(),
           code: 'TEMP',
           provider: { id: providerId },
@@ -144,9 +157,9 @@ export class BatchsService {
         }
 
         const inventoryMovement = inventoryMovementsRepository.create({
-          quantity: quantityInitial,
+          quantity: quantityInGrams,
           balancePrevius: 0,
-          balanceCurrent: quantityInitial,
+          balanceCurrent: quantityInGrams,
           date: batchWithCode.entryDate,
           observation: `Entrada inicial del lote ${batchWithCode.code}`,
           batch: { id: batchWithCode.id },

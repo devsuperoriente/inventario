@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { TypeMovementService } from '../services/type.movement.service.js';
 import { CreateTypeMovementDto } from '../dto/create-type.movement.dto.js';
 import { UpdateTypeMovementDto } from '../dto/update-type.movement.dto.js';

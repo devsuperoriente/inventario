@@ -27,6 +27,10 @@ export class CreateProductDto {
 
   @IsNumber()
   @IsOptional()
+  quantityInGrams: number;
+
+  @IsNumber()
+  @IsOptional()
   categoryId: number;
 
   @IsNumber()

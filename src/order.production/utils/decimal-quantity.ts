@@ -54,7 +54,10 @@ export function multiplyDecimals(left: Decimal, right: Decimal): string {
     return digits;
   }
   const integer = digits.slice(0, -scale);
-  const fraction = digits.slice(-scale).replace(/0+$/, '');
+  let fraction = digits.slice(-scale);
+  while (fraction.endsWith('0')) {
+    fraction = fraction.slice(0, -1);
+  }
   return fraction ? `${integer}.${fraction}` : integer;
 }
 
@@ -64,7 +67,10 @@ export function multiplyAndDivideDecimals(left: Decimal, right: Decimal, divisor
   const roundedCoefficient = (numerator + denominator / 2n) / denominator;
   const digits = roundedCoefficient.toString().padStart(11, '0');
   const integer = digits.slice(0, -10);
-  const fraction = digits.slice(-10).replace(/0+$/, '');
+  let fraction = digits.slice(-10);
+  while (fraction.endsWith('0')) {
+    fraction = fraction.slice(0, -1);
+  }
   return fraction ? `${integer}.${fraction}` : integer;
 }
 
@@ -74,7 +80,10 @@ function formatDecimal(coefficient: bigint, scale: number): string {
     return digits;
   }
   const integer = digits.slice(0, -scale);
-  const fraction = digits.slice(-scale).replace(/0+$/, '');
+  let fraction = digits.slice(-scale);
+  while (fraction.endsWith('0')) {
+    fraction = fraction.slice(0, -1);
+  }
   return fraction ? `${integer}.${fraction}` : integer;
 }
 

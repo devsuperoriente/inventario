@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { addDecimalStrings, multiplyAndDivideDecimals, multiplyDecimals, parsePositiveModelDecimal, roundDecimalToScale } from './decimal-quantity.js';
+import { addDecimalStrings, multiplyAndDivideDecimals, multiplyDecimals, parsePositiveModelDecimal, roundDecimalToScale, scaledIntegerToDecimal } from './decimal-quantity.js';
 
 describe('decimal quantity helpers', () => {
   it('multiplies model decimals exactly without integer rounding', () => {
@@ -28,6 +28,8 @@ describe('decimal quantity helpers', () => {
   it('rounds persisted consumption values to model scale and combines duplicate recipe lines', () => {
     expect(roundDecimalToScale('0.225', 2)).toBe('0.23');
     expect(addDecimalStrings('1.25', '0.75')).toBe('2');
+    expect(scaledIntegerToDecimal(700n, 2)).toBe('7');
+    expect(scaledIntegerToDecimal(710n, 2)).toBe('7.1');
   });
 
   it('rejects non-positive and out-of-model-precision values', () => {

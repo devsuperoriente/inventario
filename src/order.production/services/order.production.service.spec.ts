@@ -323,11 +323,12 @@ describe('OrderProductionService', () => {
     expect(batchesQueryBuilder.setLock).toHaveBeenCalledWith('pessimistic_write');
     expect(batchesQueryBuilder.andWhere).toHaveBeenCalledWith('batch.expirationDate >= CURRENT_DATE');
     expect(batchesQueryBuilder.orderBy).toHaveBeenCalledWith('batch.expirationDate', 'ASC');
-    expect(batchRepository.save).toHaveBeenCalledTimes(2);
+    expect(batchRepository.save).toHaveBeenCalledTimes(1);
+    expect(batchRepository.save).toHaveBeenCalledWith([earlierBatch, laterBatch]);
     expect(earlierBatch.quantityAvailable).toBe('0');
     expect(laterBatch.quantityAvailable).toBe('2.25');
-    expect(consumptionsRepository.save).toHaveBeenCalledTimes(2);
-    expect(inventoryMovementsRepository.save).toHaveBeenCalledTimes(2);
+    expect(consumptionsRepository.save).toHaveBeenCalledTimes(1);
+    expect(inventoryMovementsRepository.save).toHaveBeenCalledTimes(1);
     expect(inventoryMovementsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         quantity: '0.75',

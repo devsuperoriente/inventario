@@ -1,8 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard.js';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { CreateRoleDto, UpdateRoleDto } from '../dto/role.dto.js';
 import { RequirePermissions } from '../decorators/require-permissions.decorator.js';
-import { RolesGuard } from '../guards/roles.guard.js';
 import { RolesService } from '../services/roles.service.js';
 
 @Controller('roles')

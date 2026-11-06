@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
 import { ProvidersService } from '../services/providers.service.js';
 import { CreateProviderDto } from '../dto/create-provider.dto.js';
 import { UpdateProviderDto } from '../dto/update-provider.dto.js';

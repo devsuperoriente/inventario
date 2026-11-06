@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { DetailsRecipeService } from '../services/details.recipe.service.js';
 import { CreateDetailsRecipeDto } from '../dto/create-details.recipe.dto.js';
 import { UpdateDetailsRecipeDto } from '../dto/update-details.recipe.dto.js';
